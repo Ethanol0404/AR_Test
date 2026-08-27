@@ -293,6 +293,91 @@ namespace LiverAR.Tests.EditMode
         }
 
         [Test]
+        public void SceneBinderKeepsVesselShowAllScopedToVesselPanel()
+        {
+            var managerObject = new GameObject("manager");
+            var manager = managerObject.AddComponent<AnatomyManager>();
+            var segment = CreatePart("segment-i", "Segment I");
+            var vessel = CreatePart("portal-vein", "Portal Vein", AnatomyCategory.Vessel);
+            manager.Register(segment);
+            manager.Register(vessel);
+            var controller = CreateUiController(manager);
+            var vesselShowAll = GetPrivateField<GameObject>(controller, "vesselPanel").transform.Find("Show All Button").GetComponent<UnityEngine.UI.Button>();
+            vesselShowAll.onClick.RemoveAllListeners();
+            RebindSceneButtons(controller);
+            segment.SetVisible(false);
+            vessel.SetVisible(false);
+
+            vesselShowAll.onClick.Invoke();
+
+            Assert.That(vessel.IsVisible, Is.True);
+            Assert.That(segment.IsVisible, Is.False);
+
+            DestroyUiTestObjects(controller, managerObject, segment.gameObject, vessel.gameObject);
+        }
+
+        [Test]
+        public void SceneBinderKeepsCouinaudShowAllScopedToSegmentPanel()
+        {
+            var managerObject = new GameObject("manager");
+            var manager = managerObject.AddComponent<AnatomyManager>();
+            var segment = CreatePart("segment-i", "Segment I");
+            var vessel = CreatePart("portal-vein", "Portal Vein", AnatomyCategory.Vessel);
+            manager.Register(segment);
+            manager.Register(vessel);
+            var controller = CreateUiController(manager);
+            var segmentShowAll = GetPrivateField<GameObject>(controller, "couinaudSegmentsPanel").transform.Find("Show All Button").GetComponent<UnityEngine.UI.Button>();
+            segmentShowAll.onClick.RemoveAllListeners();
+            RebindSceneButtons(controller);
+            segment.SetVisible(false);
+            vessel.SetVisible(false);
+
+            segmentShowAll.onClick.Invoke();
+
+            Assert.That(segment.IsVisible, Is.True);
+            Assert.That(vessel.IsVisible, Is.False);
+
+            DestroyUiTestObjects(controller, managerObject, segment.gameObject, vessel.gameObject);
+        }
+
+        [Test]
+        public void SceneBinderReturnsSegmentationBackToMainMenu()
+        {
+            var managerObject = new GameObject("manager");
+            var controller = CreateUiController(managerObject.AddComponent<AnatomyManager>());
+            var back = GetPrivateField<GameObject>(controller, "segmentationMenuPanel").transform.Find("Back Button").GetComponent<UnityEngine.UI.Button>();
+            back.onClick.RemoveAllListeners();
+            RebindSceneButtons(controller);
+            controller.OpenSegmentationMenu();
+
+            back.onClick.Invoke();
+
+            Assert.That(GetPrivateField<GameObject>(controller, "compactMenuPanel").activeSelf, Is.True);
+
+            DestroyUiTestObjects(controller, managerObject);
+        }
+
+        [Test]
+        public void SceneBinderClosesInformationWithoutClosingNavigation()
+        {
+            var managerObject = new GameObject("manager");
+            var controller = CreateUiController(managerObject.AddComponent<AnatomyManager>());
+            var informationPanel = GetPrivateField<GameObject>(controller, "informationPanel");
+            var close = informationPanel.transform.Find("Close Button").GetComponent<UnityEngine.UI.Button>();
+            close.onClick.RemoveAllListeners();
+            RebindSceneButtons(controller);
+            controller.ToggleMenu();
+            controller.OpenInformationPanelForSelection();
+
+            close.onClick.Invoke();
+
+            Assert.That(informationPanel.activeSelf, Is.False);
+            Assert.That(GetPrivateField<GameObject>(controller, "compactMenuPanel").activeSelf, Is.True);
+
+            DestroyUiTestObjects(controller, managerObject);
+        }
+
+        [Test]
         public void GestureClassifierPrefersDragOverLongPressAfterMovementThreshold()
         {
             var state = AnatomyGestureClassifier.ClassifySingleTouch(
@@ -347,6 +432,12 @@ namespace LiverAR.Tests.EditMode
         static void SetPrivateField(object target, string name, object value)
         {
             typeof(ARUIController).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(target, value);
+        }
+
+        static void RebindSceneButtons(ARUIController controller)
+        {
+            SetPrivateField(controller, "buttonsBound", false);
+            typeof(ARUIController).GetMethod("BindSceneButtons", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(controller, null);
         }
 
         static void DestroyUiTestObjects(ARUIController controller, params GameObject[] otherObjects)

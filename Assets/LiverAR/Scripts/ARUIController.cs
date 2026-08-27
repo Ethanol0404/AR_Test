@@ -618,16 +618,41 @@ namespace LiverAR.Runtime
             BindButton("Model Button", SelectNormalModel);
             BindButton("Normal Liver Button", SelectNormalModel);
             BindButton("Disease Liver Button", SelectDiseaseModel);
-            BindButton("Segmentation Button", OpenSegmentationMenu);
-            BindButton("Couinaud Segments Button", OpenCouinaudSegmentsPanel);
-            BindButton("Vessels Button", OpenVesselsPanel);
-            BindButton("Settings Button", OpenSettingsPanel);
-            BindButton("Reset Placement Button", ResetPlacement);
             BindButton("Segments Button", OpenCouinaudSegmentsPanel);
             BindButton("Isolate Button", IsolateSelected);
             BindButton("Reset Settings Button", ResetSettings);
             BindButton("Reset Segments Button", ResetAppearance);
+
+            BindPanelButton(compactMenuPanel, "Model Button", SelectNormalModel);
+            BindPanelButton(compactMenuPanel, "Segmentation Button", OpenSegmentationMenu);
+            BindPanelButton(compactMenuPanel, "Settings Button", OpenSettingsPanel);
+            BindPanelButton(compactMenuPanel, "Reset Placement Button", ResetPlacement);
+            BindPanelButton(segmentationMenuPanel, "Couinaud Segments Button", OpenCouinaudSegmentsPanel);
+            BindPanelButton(segmentationMenuPanel, "Vessels Button", OpenVesselsPanel);
+            BindPanelButton(segmentationMenuPanel, "Back Button", ToggleMenu);
+            BindPanelButton(couinaudSegmentsPanel, "Show All Button", ShowAllSegments);
+            BindPanelButton(couinaudSegmentsPanel, "Hide All Button", HideAllSegments);
+            BindPanelButton(couinaudSegmentsPanel, "Close Button", ClosePanels);
+            BindPanelButton(vesselPanel, "Show All Button", ShowAllVessels);
+            BindPanelButton(vesselPanel, "Hide All Button", HideAllVessels);
+            BindPanelButton(vesselPanel, "Close Button", ClosePanels);
+            BindPanelButton(settingsPanel, "Back Button", ClosePanels);
+            BindPanelButton(informationPanel, "Close Button", () => SetPanelActive(informationPanel, null));
+            BindPanelButton(transparencyPanel, "Close Button", () => SetPanelActive(transparencyPanel, null));
             buttonsBound = true;
+        }
+
+        static void BindPanelButton(GameObject panel, string objectName, UnityEngine.Events.UnityAction action)
+        {
+            if (panel == null)
+                return;
+
+            var button = panel.transform.Find(objectName)?.GetComponent<Button>();
+            if (button == null)
+                return;
+
+            button.onClick.RemoveAllListeners();
+            button.onClick.AddListener(action);
         }
 
         void BindButton(string objectName, UnityEngine.Events.UnityAction action)
