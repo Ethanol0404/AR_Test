@@ -8,7 +8,7 @@ namespace LiverAR.Runtime
         [SerializeField] AnatomyManager anatomyManager;
         [SerializeField] LayerMask selectionMask = ~0;
 
-        public bool IsSelectionHandlingEnabled => GetComponent<AnatomyInteractionController>() == null;
+        public bool IsSelectionHandlingEnabled => FindAnyObjectByType<AnatomyInteractionController>() == null;
 
         void OnEnable()
         {

@@ -178,7 +178,8 @@ namespace LiverAR.Runtime
         }
         public void OpenVesselsPanel()
         {
-            EnableVesselViewingMode();
+            // Opening the vessel controls must not change the user's liver visibility choices.
+            ShowVesselsWithoutChangingLiverState();
             RebuildVesselToggles();
             SetNavigationPanel(vesselPanel);
         }
@@ -355,26 +356,15 @@ namespace LiverAR.Runtime
             anatomyManager.ClearSelection();
         }
 
-        void EnableVesselViewingMode()
+        void ShowVesselsWithoutChangingLiverState()
         {
             if (anatomyManager == null)
                 return;
 
             foreach (var part in anatomyManager.Parts)
             {
-                if (part == null)
-                    continue;
-
-                if (part.Category == AnatomyCategory.Vessel)
-                {
+                if (part != null && part.Category == AnatomyCategory.Vessel)
                     part.SetVisible(true);
-                    part.SetOpacity(1f);
-                }
-                else if (part.Category == AnatomyCategory.LiverSegment || part.Category == AnatomyCategory.WholeLiver)
-                {
-                    part.SetVisible(true);
-                    part.SetOpacity(0.32f);
-                }
             }
         }
 
@@ -908,11 +898,31 @@ namespace LiverAR.Runtime
         {
             var obj = new GameObject(name);
             obj.transform.SetParent(parent, false);
+            var background = obj.AddComponent<Image>();
+            background.color = new Color(0.25f, 0.28f, 0.30f, 0.95f);
             var slider = obj.AddComponent<Slider>();
             slider.minValue = min;
             slider.maxValue = max;
             slider.value = value;
             SetAnchors(obj.GetComponent<RectTransform>(), anchorMin, size);
+
+            var fill = new GameObject("Fill");
+            fill.transform.SetParent(obj.transform, false);
+            var fillImage = fill.AddComponent<Image>();
+            fillImage.color = new Color(0.22f, 0.78f, 0.45f, 1f);
+            SetAnchors(fill.GetComponent<RectTransform>(), Vector2.zero, Vector2.one);
+
+            var handle = new GameObject("Handle");
+            handle.transform.SetParent(obj.transform, false);
+            var handleImage = handle.AddComponent<Image>();
+            handleImage.color = Color.white;
+            var handleRect = handle.GetComponent<RectTransform>();
+            handleRect.anchorMin = new Vector2(0.5f, 0f);
+            handleRect.anchorMax = new Vector2(0.5f, 1f);
+            handleRect.sizeDelta = new Vector2(28f, 0f);
+            slider.fillRect = fill.GetComponent<RectTransform>();
+            slider.handleRect = handleRect;
+            slider.targetGraphic = handleImage;
             return slider;
         }
 

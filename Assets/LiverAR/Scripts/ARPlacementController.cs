@@ -92,6 +92,7 @@ namespace LiverAR.Runtime
                 }
                 ReportMissingSegmentReferences(normalModelInstance);
                 ApplySelectedModel();
+                AlignVesselToLiver(normalModelInstance.transform);
                 FitPlacedModelIntoCameraView();
 
                 if (interactionController != null)
@@ -430,6 +431,35 @@ namespace LiverAR.Runtime
             anatomyManager.SetConfiguredParts(parts);
             anatomyManager.ClearSelection();
             anatomyManager.ShowWholeLiverOverview();
+        }
+
+        static void AlignVesselToLiver(Transform modelRoot)
+        {
+            if (modelRoot == null)
+                return;
+
+            AnatomyPart liver = null;
+            AnatomyPart vessel = null;
+            foreach (var part in modelRoot.GetComponentsInChildren<AnatomyPart>(true))
+            {
+                if (part.Category == AnatomyCategory.WholeLiver)
+                    liver = part;
+                else if (part.Category == AnatomyCategory.Vessel)
+                    vessel = part;
+            }
+
+            if (liver == null || vessel == null || liver.Renderers.Length == 0 || vessel.Renderers.Length == 0)
+                return;
+
+            var liverBounds = liver.Renderers[0].bounds;
+            foreach (var renderer in liver.Renderers)
+                if (renderer != null) liverBounds.Encapsulate(renderer.bounds);
+
+            var vesselBounds = vessel.Renderers[0].bounds;
+            foreach (var renderer in vessel.Renderers)
+                if (renderer != null) vesselBounds.Encapsulate(renderer.bounds);
+
+            vessel.transform.position += liverBounds.center - vesselBounds.center;
         }
 
         static void ReportMissingSegmentReferences(GameObject modelRoot)

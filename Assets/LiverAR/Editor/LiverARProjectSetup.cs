@@ -225,11 +225,36 @@ namespace LiverAR.Editor
                     parts.Add(part);
             }
 
+            AlignVesselToLiver(root.transform);
+
             var manager = root.AddComponent<AnatomyManager>();
             manager.SetConfiguredParts(parts.ToArray());
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
             UnityEngine.Object.DestroyImmediate(root);
             return prefab;
+        }
+
+        static void AlignVesselToLiver(Transform root)
+        {
+            var liver = root.Find("Whole Liver");
+            var vessel = root.Find("Blood Vessel");
+            if (liver == null || vessel == null)
+                return;
+
+            var liverRenderers = liver.GetComponentsInChildren<Renderer>(true);
+            var vesselRenderers = vessel.GetComponentsInChildren<Renderer>(true);
+            if (liverRenderers.Length == 0 || vesselRenderers.Length == 0)
+                return;
+
+            var liverBounds = liverRenderers[0].bounds;
+            foreach (var renderer in liverRenderers)
+                liverBounds.Encapsulate(renderer.bounds);
+
+            var vesselBounds = vesselRenderers[0].bounds;
+            foreach (var renderer in vesselRenderers)
+                vesselBounds.Encapsulate(renderer.bounds);
+
+            vessel.position += liverBounds.center - vesselBounds.center;
         }
 
         static AnatomyPart CreateStructure(Transform parent, StructureSeed seed)

@@ -123,7 +123,7 @@ namespace LiverAR.Runtime
 
             anatomyManager?.Select(startedPart);
             LongPressedPart?.Invoke(startedPart, startPosition);
-            uiController?.ToggleTransparencyPanelForSelection();
+            uiController?.OpenTransparencyPanelForSelection();
             state = AnatomyGestureState.LongPressTriggered;
         }
 
