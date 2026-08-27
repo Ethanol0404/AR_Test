@@ -90,7 +90,16 @@ namespace LiverAR.Runtime
 
         public static bool IsPointerOverUi(PointerInput pointer)
         {
-            return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject(pointer.PointerId);
+            var eventSystem = EventSystem.current;
+            if (eventSystem == null)
+                return false;
+
+            // Use a screen-position raycast instead of only the touch ID. On Android,
+            // InputSystem touch IDs can be reported as UI-owned while held over 3D content.
+            var eventData = new PointerEventData(eventSystem) { position = pointer.ScreenPosition };
+            var results = new List<RaycastResult>();
+            eventSystem.RaycastAll(eventData, results);
+            return results.Count > 0;
         }
 
         public static bool IsAnyTouchOverUi()
