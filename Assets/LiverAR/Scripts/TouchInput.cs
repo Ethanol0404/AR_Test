@@ -41,6 +41,24 @@ namespace LiverAR.Runtime
                 return true;
             }
 
+            // Some Android builds expose the device touch stream through Touchscreen
+            // before EnhancedTouch has populated activeTouches.
+            var touchscreen = Touchscreen.current;
+            if (touchscreen != null)
+            {
+                var primary = touchscreen.primaryTouch;
+                if (primary.press.isPressed || primary.press.wasPressedThisFrame || primary.press.wasReleasedThisFrame)
+                {
+                    var phase = primary.press.wasPressedThisFrame
+                        ? TouchPhase.Began
+                        : primary.press.wasReleasedThisFrame
+                            ? TouchPhase.Ended
+                            : TouchPhase.Moved;
+                    pointer = new PointerInput(primary.position.ReadValue(), primary.delta.ReadValue(), phase, primary.touchId.ReadValue());
+                    return true;
+                }
+            }
+
             var mouse = Mouse.current;
             if (mouse == null)
             {
