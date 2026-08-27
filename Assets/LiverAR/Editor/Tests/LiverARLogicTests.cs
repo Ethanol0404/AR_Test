@@ -102,6 +102,19 @@ namespace LiverAR.Tests.EditMode
         }
 
         [Test]
+        public void ResetOpacityRestoresSelectedPartToOpaque()
+        {
+            var part = CreatePart("segment-1", "Segment 1");
+            part.SetOpacity(0.35f);
+
+            part.ResetOpacity();
+
+            Assert.That(part.Opacity, Is.EqualTo(1f));
+
+            Object.DestroyImmediate(part.gameObject);
+        }
+
+        [Test]
         public void AnatomyManagerSelectionReplacesPreviousSelection()
         {
             var managerObject = new GameObject("manager");

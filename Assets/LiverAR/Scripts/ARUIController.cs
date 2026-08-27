@@ -178,7 +178,11 @@ namespace LiverAR.Runtime
             SetNavigationPanel(vesselPanel);
         }
         public void OpenInformationPanelForSelection() => SetPanelActive(informationPanel, informationPanel);
-        public void OpenTransparencyPanelForSelection() => SetPanelActive(transparencyPanel, transparencyPanel);
+        public void OpenTransparencyPanelForSelection()
+        {
+            OnSelectionChanged(anatomyManager != null ? anatomyManager.SelectedPart : null);
+            SetPanelActive(transparencyPanel, transparencyPanel);
+        }
         public void OpenSettingsPanel() => SetNavigationPanel(settingsPanel);
         public void ClosePanels() => SetNavigationPanel(null);
         public void ResetPlacement() => sessionResetController?.ResetSession();
@@ -270,6 +274,16 @@ namespace LiverAR.Runtime
             transparencyController?.SetSelectedOpacity(value);
         }
 
+        public void ResetSelectedTransparency()
+        {
+            if (transparencyController != null && transparencyController.ResetSelectedOpacity())
+            {
+                var selected = anatomyManager != null ? anatomyManager.SelectedPart : null;
+                if (selectedOpacitySlider != null && selected != null)
+                    selectedOpacitySlider.SetValueWithoutNotify(selected.Opacity);
+            }
+        }
+
         void OnSelectionChanged(AnatomyPart part)
         {
             var hasSelection = part != null;
@@ -288,8 +302,12 @@ namespace LiverAR.Runtime
                 transparencyTitleText.text = hasSelection ? $"Opacity: {part.DisplayName}" : "Opacity: no selection";
 
             UpdateInformationPanel(part);
-            if (hasSelection)
-                OpenInformationPanelForSelection();
+        }
+
+        public void CloseDetailOverlays()
+        {
+            SetPanelActive(informationPanel, null);
+            SetPanelActive(transparencyPanel, null);
         }
 
         void UpdateVesselOptionVisibility()
@@ -575,10 +593,12 @@ namespace LiverAR.Runtime
             informationBodyText = CreateRuntimeText(informationPanel.transform, "Information Body", "Select an anatomical structure to view details.", 15, TextAnchor.UpperLeft, new Vector2(0.06f, 0.20f), new Vector2(0.94f, 0.94f));
             CreateRuntimeButton(informationPanel.transform, "Close", new Vector2(0.32f, 0.04f), new Vector2(0.36f, 0.12f), () => SetPanelActive(informationPanel, null));
 
-            transparencyPanel = CreateRuntimePanel(root, "Transparency Panel", new Vector2(0.55f, 0.66f), new Vector2(0.40f, 0.18f));
-            transparencyTitleText = CreateRuntimeText(transparencyPanel.transform, "Transparency Title", "Opacity: no selection", 15, TextAnchor.UpperLeft, new Vector2(0.06f, 0.62f), new Vector2(0.94f, 0.94f));
-            selectedOpacitySlider = CreateRuntimeSlider(transparencyPanel.transform, "Selected Opacity", new Vector2(0.06f, 0.32f), new Vector2(0.88f, 0.14f), 0f, 1f, 1f);
-            CreateRuntimeButton(transparencyPanel.transform, "Close", new Vector2(0.32f, 0.06f), new Vector2(0.36f, 0.16f), () => SetPanelActive(transparencyPanel, null));
+            transparencyPanel = CreateRuntimePanel(root, "Transparency Panel", new Vector2(0.55f, 0.62f), new Vector2(0.40f, 0.22f));
+            transparencyTitleText = CreateRuntimeText(transparencyPanel.transform, "Transparency Title", "Opacity: no selection", 15, TextAnchor.UpperLeft, new Vector2(0.06f, 0.68f), new Vector2(0.94f, 0.94f));
+            CreateRuntimeText(transparencyPanel.transform, "Transparency Label", "Transparency", 13, TextAnchor.MiddleLeft, new Vector2(0.06f, 0.50f), new Vector2(0.44f, 0.66f));
+            selectedOpacitySlider = CreateRuntimeSlider(transparencyPanel.transform, "Selected Opacity", new Vector2(0.06f, 0.34f), new Vector2(0.88f, 0.12f), 0f, 1f, 1f);
+            CreateRuntimeButton(transparencyPanel.transform, "Reset", new Vector2(0.08f, 0.08f), new Vector2(0.36f, 0.16f), ResetSelectedTransparency);
+            CreateRuntimeButton(transparencyPanel.transform, "Close", new Vector2(0.56f, 0.08f), new Vector2(0.36f, 0.16f), () => SetPanelActive(transparencyPanel, null));
 
             settingsPanel = CreateRuntimePanel(root, "Settings Panel", new Vector2(0.58f, 0.18f), new Vector2(0.36f, 0.42f));
             interactionSensitivitySlider = CreateRuntimeSlider(settingsPanel.transform, "Interaction Sensitivity", new Vector2(0.08f, 0.70f), new Vector2(0.84f, 0.10f), 0.2f, 3f, 1f);
@@ -638,6 +658,7 @@ namespace LiverAR.Runtime
             BindPanelButton(vesselPanel, "Close Button", ClosePanels);
             BindPanelButton(settingsPanel, "Back Button", ClosePanels);
             BindPanelButton(informationPanel, "Close Button", () => SetPanelActive(informationPanel, null));
+            BindPanelButton(transparencyPanel, "Reset Button", ResetSelectedTransparency);
             BindPanelButton(transparencyPanel, "Close Button", () => SetPanelActive(transparencyPanel, null));
             buttonsBound = true;
         }

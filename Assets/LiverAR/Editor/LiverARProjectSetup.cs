@@ -378,10 +378,12 @@ namespace LiverAR.Editor
             var infoBody = CreateText(informationPanel.transform, "Information Body", "Select an anatomical structure to view details.", 15, TextAnchor.UpperLeft, new Vector2(0.06f, 0.20f), new Vector2(0.94f, 0.94f));
             CreateButton(informationPanel.transform, "Close", new Vector2(0.32f, 0.04f), new Vector2(0.36f, 0.12f), () => informationPanel.SetActive(false));
 
-            var transparencyPanel = CreatePanel(canvasObject.transform, "Transparency Panel", new Vector2(0.55f, 0.66f), new Vector2(0.40f, 0.18f));
-            var transparencyTitle = CreateText(transparencyPanel.transform, "Transparency Title", "Opacity: no selection", 15, TextAnchor.UpperLeft, new Vector2(0.06f, 0.62f), new Vector2(0.94f, 0.94f));
-            var selectedOpacitySlider = CreateSlider(transparencyPanel.transform, "Selected Opacity", new Vector2(0.06f, 0.32f), new Vector2(0.88f, 0.14f), 0f, 1f, 1f);
-            CreateButton(transparencyPanel.transform, "Close", new Vector2(0.32f, 0.06f), new Vector2(0.36f, 0.16f), () => transparencyPanel.SetActive(false));
+            var transparencyPanel = CreatePanel(canvasObject.transform, "Transparency Panel", new Vector2(0.55f, 0.62f), new Vector2(0.40f, 0.22f));
+            var transparencyTitle = CreateText(transparencyPanel.transform, "Transparency Title", "Opacity: no selection", 15, TextAnchor.UpperLeft, new Vector2(0.06f, 0.68f), new Vector2(0.94f, 0.94f));
+            CreateText(transparencyPanel.transform, "Transparency Label", "Transparency", 13, TextAnchor.MiddleLeft, new Vector2(0.06f, 0.50f), new Vector2(0.44f, 0.66f));
+            var selectedOpacitySlider = CreateSlider(transparencyPanel.transform, "Selected Opacity", new Vector2(0.06f, 0.34f), new Vector2(0.88f, 0.12f), 0f, 1f, 1f);
+            CreateButton(transparencyPanel.transform, "Reset", new Vector2(0.08f, 0.08f), new Vector2(0.36f, 0.16f), () => uiController.ResetSelectedTransparency());
+            CreateButton(transparencyPanel.transform, "Close", new Vector2(0.56f, 0.08f), new Vector2(0.36f, 0.16f), () => transparencyPanel.SetActive(false));
 
             var settingsPanel = CreatePanel(canvasObject.transform, "Settings Panel", new Vector2(0.58f, 0.18f), new Vector2(0.36f, 0.42f));
             var interactionSlider = CreateSlider(settingsPanel.transform, "Interaction Sensitivity", new Vector2(0.08f, 0.70f), new Vector2(0.84f, 0.10f), 0.2f, 3f, 1f);
