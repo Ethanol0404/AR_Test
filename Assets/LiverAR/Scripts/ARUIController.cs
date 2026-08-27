@@ -161,7 +161,11 @@ namespace LiverAR.Runtime
 
         public void UseVirtualSurface() => placementController?.UseVirtualSurface();
         public void ToggleMenu() => SetNavigationPanel(compactMenuPanel != null && compactMenuPanel.activeSelf ? null : compactMenuPanel);
-        public void OpenSegmentationMenu() => SetNavigationPanel(segmentationMenuPanel);
+        public void OpenSegmentationMenu()
+        {
+            UpdateVesselOptionVisibility();
+            SetNavigationPanel(segmentationMenuPanel);
+        }
         public void OpenCouinaudSegmentsPanel()
         {
             anatomyManager?.ShowLiverSegments();
@@ -284,6 +288,32 @@ namespace LiverAR.Runtime
                 transparencyTitleText.text = hasSelection ? $"Opacity: {part.DisplayName}" : "Opacity: no selection";
 
             UpdateInformationPanel(part);
+            if (hasSelection)
+                OpenInformationPanelForSelection();
+        }
+
+        void UpdateVesselOptionVisibility()
+        {
+            if (segmentationMenuPanel == null)
+                return;
+
+            var vesselButton = segmentationMenuPanel.transform.Find("Vessels Button");
+            if (vesselButton != null)
+                vesselButton.gameObject.SetActive(HasAnatomyPart(AnatomyCategory.Vessel));
+        }
+
+        bool HasAnatomyPart(AnatomyCategory category)
+        {
+            if (anatomyManager == null)
+                return false;
+
+            foreach (var part in anatomyManager.Parts)
+            {
+                if (part != null && part.Category == category)
+                    return true;
+            }
+
+            return false;
         }
 
         void ShowCategory(AnatomyCategory category)
@@ -595,10 +625,6 @@ namespace LiverAR.Runtime
             BindButton("Reset Placement Button", ResetPlacement);
             BindButton("Segments Button", OpenCouinaudSegmentsPanel);
             BindButton("Isolate Button", IsolateSelected);
-            BindButton("Show All Button", ShowAllSegments);
-            BindButton("Hide All Button", HideAllSegments);
-            BindButton("Back Button", ClosePanels);
-            BindButton("Close Button", ClosePanels);
             BindButton("Reset Settings Button", ResetSettings);
             BindButton("Reset Segments Button", ResetAppearance);
             buttonsBound = true;

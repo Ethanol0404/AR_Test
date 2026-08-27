@@ -220,6 +220,79 @@ namespace LiverAR.Tests.EditMode
         }
 
         [Test]
+        public void SelectingAnatomyPartOpensInformationOverlay()
+        {
+            var managerObject = new GameObject("manager");
+            var manager = managerObject.AddComponent<AnatomyManager>();
+            var part = CreatePart("segment-i", "Segment I");
+            manager.Register(part);
+            var controller = CreateUiController(manager);
+
+            manager.Select(part);
+
+            Assert.That(GetPrivateField<GameObject>(controller, "informationPanel").activeSelf, Is.True);
+
+            DestroyUiTestObjects(controller, managerObject, part.gameObject);
+        }
+
+        [Test]
+        public void SegmentationMenuOnlyShowsVesselsWhenVesselExists()
+        {
+            var managerObject = new GameObject("manager");
+            var manager = managerObject.AddComponent<AnatomyManager>();
+            var controller = CreateUiController(manager);
+
+            controller.OpenSegmentationMenu();
+
+            var vesselsButton = GetPrivateField<GameObject>(controller, "segmentationMenuPanel").transform.Find("Vessels Button").gameObject;
+            Assert.That(vesselsButton.activeSelf, Is.False);
+
+            var vessel = CreatePart("portal-vein", "Portal Vein", AnatomyCategory.Vessel);
+            manager.Register(vessel);
+            controller.OpenSegmentationMenu();
+
+            Assert.That(vesselsButton.activeSelf, Is.True);
+
+            DestroyUiTestObjects(controller, managerObject, vessel.gameObject);
+        }
+
+        [Test]
+        public void VesselShowAllButtonOnlyShowsVessels()
+        {
+            var managerObject = new GameObject("manager");
+            var manager = managerObject.AddComponent<AnatomyManager>();
+            var segment = CreatePart("segment-i", "Segment I");
+            var vessel = CreatePart("portal-vein", "Portal Vein", AnatomyCategory.Vessel);
+            manager.Register(segment);
+            manager.Register(vessel);
+            var controller = CreateUiController(manager);
+            segment.SetVisible(false);
+            vessel.SetVisible(false);
+
+            controller.OpenVesselsPanel();
+            GetPrivateField<GameObject>(controller, "vesselPanel").transform.Find("Show All Button").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+
+            Assert.That(vessel.IsVisible, Is.True);
+            Assert.That(segment.IsVisible, Is.False);
+
+            DestroyUiTestObjects(controller, managerObject, segment.gameObject, vessel.gameObject);
+        }
+
+        [Test]
+        public void SegmentationBackButtonReturnsToMainMenu()
+        {
+            var managerObject = new GameObject("manager");
+            var controller = CreateUiController(managerObject.AddComponent<AnatomyManager>());
+
+            controller.OpenSegmentationMenu();
+            GetPrivateField<GameObject>(controller, "segmentationMenuPanel").transform.Find("Back Button").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+
+            Assert.That(GetPrivateField<GameObject>(controller, "compactMenuPanel").activeSelf, Is.True);
+
+            DestroyUiTestObjects(controller, managerObject);
+        }
+
+        [Test]
         public void GestureClassifierPrefersDragOverLongPressAfterMovementThreshold()
         {
             var state = AnatomyGestureClassifier.ClassifySingleTouch(
@@ -254,6 +327,33 @@ namespace LiverAR.Tests.EditMode
             var part = root.AddComponent<AnatomyPart>();
             part.Configure(id, displayName, category, Color.white, new[] { renderer });
             return part;
+        }
+
+        static ARUIController CreateUiController(AnatomyManager anatomyManager)
+        {
+            var root = new GameObject("ui");
+            root.SetActive(false);
+            var controller = root.AddComponent<ARUIController>();
+            SetPrivateField(controller, "anatomyManager", anatomyManager);
+            root.SetActive(true);
+            return controller;
+        }
+
+        static T GetPrivateField<T>(object target, string name) where T : class
+        {
+            return (T)typeof(ARUIController).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(target);
+        }
+
+        static void SetPrivateField(object target, string name, object value)
+        {
+            typeof(ARUIController).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(target, value);
+        }
+
+        static void DestroyUiTestObjects(ARUIController controller, params GameObject[] otherObjects)
+        {
+            Object.DestroyImmediate(controller.gameObject);
+            foreach (var otherObject in otherObjects)
+                Object.DestroyImmediate(otherObject);
         }
     }
 }
