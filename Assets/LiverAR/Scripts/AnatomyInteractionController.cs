@@ -64,14 +64,16 @@ namespace LiverAR.Runtime
                 return;
             }
 
-            if (TouchInput.IsPointerOverUi(pointer))
-            {
-                CancelSingleTouch(AnatomyGestureState.Idle);
-                return;
-            }
-
             if (TouchInput.IsBegan(pointer))
             {
+                // Decide UI ownership only at touch-down. Android EventSystem can report
+                // a held model touch as UI-over during later frames.
+                if (TouchInput.IsPointerOverUi(pointer))
+                {
+                    CancelSingleTouch(AnatomyGestureState.Idle);
+                    return;
+                }
+
                 BeginTouch(pointer);
                 return;
             }
