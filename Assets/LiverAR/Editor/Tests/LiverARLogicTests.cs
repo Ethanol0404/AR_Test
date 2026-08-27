@@ -280,7 +280,7 @@ namespace LiverAR.Tests.EditMode
         }
 
         [Test]
-        public void SelectingAnatomyPartOpensInformationOverlay()
+        public void SelectingAnatomyPartLeavesOverlayChoiceToInteractionController()
         {
             var managerObject = new GameObject("manager");
             var manager = managerObject.AddComponent<AnatomyManager>();
@@ -289,6 +289,10 @@ namespace LiverAR.Tests.EditMode
             var controller = CreateUiController(manager);
 
             manager.Select(part);
+
+            Assert.That(GetPrivateField<GameObject>(controller, "informationPanel").activeSelf, Is.False);
+
+            controller.OpenInformationPanelForSelection();
 
             Assert.That(GetPrivateField<GameObject>(controller, "informationPanel").activeSelf, Is.True);
 
@@ -463,6 +467,21 @@ namespace LiverAR.Tests.EditMode
                 startedOnPart: true);
 
             Assert.That(state, Is.EqualTo(AnatomyGestureState.LongPressTriggered));
+        }
+
+        [Test]
+        public void LegacySelectionYieldsWhenCoordinatedControllerExists()
+        {
+            var root = new GameObject("interaction-root");
+            var legacySelection = root.AddComponent<AnatomySelectionController>();
+
+            Assert.That(legacySelection.IsSelectionHandlingEnabled, Is.True);
+
+            root.AddComponent<AnatomyInteractionController>();
+
+            Assert.That(legacySelection.IsSelectionHandlingEnabled, Is.False);
+
+            Object.DestroyImmediate(root);
         }
 
         static AnatomyPart CreatePart(string id, string displayName, AnatomyCategory category = AnatomyCategory.LiverSegment)

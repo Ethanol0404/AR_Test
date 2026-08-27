@@ -76,7 +76,7 @@ namespace LiverAR.Editor
             var anatomyManager = managersObject.AddComponent<AnatomyManager>();
             var interaction = managersObject.AddComponent<ModelInteractionController>();
             var placement = managersObject.AddComponent<ARPlacementController>();
-            var selection = managersObject.AddComponent<AnatomySelectionController>();
+            var anatomyInteraction = managersObject.AddComponent<AnatomyInteractionController>();
             var transparency = managersObject.AddComponent<TransparencyController>();
             var reset = managersObject.AddComponent<ARSessionResetController>();
             var status = managersObject.AddComponent<ARStatusController>();
@@ -106,8 +106,11 @@ namespace LiverAR.Editor
             SetSerialized(placement, "arCamera", camera);
             SetSerialized(placement, "virtualSurfaceVisual", virtualSurface);
             SetSerialized(interaction, "raycastManager", originObject.GetComponent<ARRaycastManager>());
-            SetSerialized(selection, "arCamera", camera);
-            SetSerialized(selection, "anatomyManager", anatomyManager);
+            SetSerialized(interaction, "arCamera", camera);
+            SetSerialized(anatomyInteraction, "arCamera", camera);
+            SetSerialized(anatomyInteraction, "anatomyManager", anatomyManager);
+            SetSerialized(anatomyInteraction, "uiController", ui);
+            SetSerialized(anatomyInteraction, "modelInteractionController", interaction);
             SetSerialized(reset, "session", arSessionObject.GetComponent<ARSession>());
             SetSerialized(reset, "placementController", placement);
             SetSerialized(background, "targetCamera", camera);

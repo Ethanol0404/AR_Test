@@ -24,6 +24,7 @@ namespace LiverAR.Runtime
         Quaternion originalRotation;
         Vector3 originalScale;
         float previousPinchDistance;
+        float previousTwistAngle;
 
         public Transform ModelRoot
         {
@@ -102,33 +103,31 @@ namespace LiverAR.Runtime
                 if (TouchInput.IsAnyTouchOverUi())
                     return;
 
-                HandlePinch();
+                HandleMultiTouch();
                 return;
             }
 
             previousPinchDistance = 0f;
-            if (TouchInput.TryGetPrimaryPointer(out var pointer) && !TouchInput.IsPointerOverUi(pointer))
-                HandleSinglePointer(pointer);
+            previousTwistAngle = 0f;
 
             HandleEditorScale();
         }
 
-        void HandleSinglePointer(TouchInput.PointerInput pointer)
-        {
-            if (!TouchInput.IsMoved(pointer))
-                return;
-
-            TranslateCameraRelative(pointer.Delta, arCamera);
-        }
-
-        void HandlePinch()
+        public void HandleMultiTouch()
         {
             var touches = TouchInput.ActiveTouches;
+            if (touches.Count < 2 || TouchInput.IsAnyTouchOverUi())
+                return;
+
             var distance = Vector2.Distance(touches[0].screenPosition, touches[1].screenPosition);
+            var twistAngle = Mathf.Atan2(
+                touches[1].screenPosition.y - touches[0].screenPosition.y,
+                touches[1].screenPosition.x - touches[0].screenPosition.x) * Mathf.Rad2Deg;
 
             if (previousPinchDistance <= 0f)
             {
                 previousPinchDistance = distance;
+                previousTwistAngle = twistAngle;
                 return;
             }
 
@@ -138,6 +137,16 @@ namespace LiverAR.Runtime
             var next = ClampScale(current * adjustedRatio, minScale, maxScale);
             modelRoot.localScale = Vector3.one * next;
             previousPinchDistance = distance;
+
+            var targetCamera = ResolveCamera(arCamera);
+            if (targetCamera != null)
+            {
+                var twistDelta = Mathf.DeltaAngle(previousTwistAngle, twistAngle);
+                modelRoot.Rotate(targetCamera.transform.up, twistDelta * settings.RotationSpeed, Space.World);
+                AdjustDepth((touches[0].delta.y + touches[1].delta.y) * 0.5f, targetCamera);
+            }
+
+            previousTwistAngle = twistAngle;
         }
 
         void HandleEditorScale()
