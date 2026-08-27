@@ -29,6 +29,20 @@ namespace LiverAR.Runtime
         public bool IsVisible => isVisible;
         public bool IsSelected => isSelected;
         public Renderer[] Renderers => renderers;
+        public Transform ModelRoot
+        {
+            get
+            {
+                var current = transform;
+                while (current != null)
+                {
+                    if (current.name.StartsWith("LiverModelRoot", StringComparison.Ordinal))
+                        return current;
+                    current = current.parent;
+                }
+                return transform.root;
+            }
+        }
 
         void Awake()
         {

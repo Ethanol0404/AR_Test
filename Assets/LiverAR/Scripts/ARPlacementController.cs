@@ -81,7 +81,7 @@ namespace LiverAR.Runtime
                 if (placedModel != null)
                     Destroy(placedModel);
 
-                placedModel = new GameObject("Placed Liver Model");
+                placedModel = new GameObject("LiverModelRoot");
                 placedModel.transform.SetPositionAndRotation(pose.position, pose.rotation);
                 normalModelInstance = Instantiate(modelPrefab, placedModel.transform);
                 normalModelInstance.name = "Normal Liver";
