@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace LiverAR.Runtime
@@ -14,6 +15,7 @@ namespace LiverAR.Runtime
         [SerializeField] Color highlightColor = new Color(1f, 0.92f, 0.25f, 1f);
 
         MaterialPropertyBlock propertyBlock;
+        readonly Dictionary<Material, int> originalRenderQueues = new Dictionary<Material, int>();
         Collider[] colliders = Array.Empty<Collider>();
         float opacity = 1f;
         bool isVisible = true;
@@ -124,6 +126,40 @@ namespace LiverAR.Runtime
                 propertyBlock.SetColor("_BaseColor", color);
                 propertyBlock.SetColor("_Color", color);
                 partRenderer.SetPropertyBlock(propertyBlock);
+                ConfigureMaterialTransparency(partRenderer, opacity);
+            }
+        }
+
+        void ConfigureMaterialTransparency(Renderer partRenderer, float alpha)
+        {
+            var materials = partRenderer.materials;
+            foreach (var material in materials)
+            {
+                if (material == null)
+                    continue;
+
+                if (!originalRenderQueues.ContainsKey(material))
+                    originalRenderQueues[material] = material.renderQueue;
+
+                if (alpha >= 0.99f)
+                {
+                    material.SetFloat("_Surface", 0f);
+                    material.SetFloat("_Blend", 0f);
+                    material.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.One);
+                    material.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.Zero);
+                    material.SetFloat("_ZWrite", 1f);
+                    material.DisableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                    material.renderQueue = originalRenderQueues[material];
+                    continue;
+                }
+
+                material.SetFloat("_Surface", 1f);
+                material.SetFloat("_Blend", 0f);
+                material.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                material.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                material.SetFloat("_ZWrite", 0f);
+                material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
             }
         }
     }

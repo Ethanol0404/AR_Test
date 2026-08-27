@@ -13,12 +13,15 @@ namespace LiverAR.Runtime
         [SerializeField] float dragThresholdPixels = 12f;
         [SerializeField] float longPressSeconds = 1f;
         [SerializeField] float longPressTolerancePixels = 10f;
+        [SerializeField] float doubleTapSeconds = 0.35f;
 
         AnatomyGestureState state = AnatomyGestureState.Idle;
         int activePointerId = int.MinValue;
         Vector2 startPosition;
         float startTime;
         AnatomyPart startedPart;
+        AnatomyPart lastTappedPart;
+        float lastTapTime = -10f;
 
         public event Action<AnatomyPart, Vector2> LongPressedPart;
 
@@ -120,7 +123,7 @@ namespace LiverAR.Runtime
 
             anatomyManager?.Select(startedPart);
             LongPressedPart?.Invoke(startedPart, startPosition);
-            uiController?.OpenTransparencyPanelForSelection();
+            uiController?.ToggleTransparencyPanelForSelection();
             state = AnatomyGestureState.LongPressTriggered;
         }
 
@@ -132,7 +135,13 @@ namespace LiverAR.Runtime
                 if (selectedPart != null)
                 {
                     anatomyManager?.Select(selectedPart);
-                    uiController?.OpenInformationPanelForSelection();
+                    if (IsDoubleTap(selectedPart))
+                        uiController?.OpenInformationPanelForSelection();
+                    else
+                        uiController?.CloseInformationPanel();
+
+                    lastTappedPart = selectedPart;
+                    lastTapTime = Time.unscaledTime;
                 }
                 else
                 {
@@ -142,6 +151,11 @@ namespace LiverAR.Runtime
             }
 
             CancelSingleTouch(AnatomyGestureState.Idle);
+        }
+
+        bool IsDoubleTap(AnatomyPart part)
+        {
+            return part != null && lastTappedPart == part && Time.unscaledTime - lastTapTime <= doubleTapSeconds;
         }
 
         AnatomyPart RaycastPart(Vector2 screenPosition)
