@@ -22,6 +22,18 @@ namespace LiverAR.Runtime
 
         public event Action<AnatomyPart, Vector2> LongPressedPart;
 
+        public void Configure(Camera camera, AnatomyManager manager, ARUIController ui, ModelInteractionController modelInteraction)
+        {
+            if (arCamera == null)
+                arCamera = camera;
+            if (anatomyManager == null)
+                anatomyManager = manager;
+            if (uiController == null)
+                uiController = ui;
+            if (modelInteractionController == null)
+                modelInteractionController = modelInteraction;
+        }
+
         void OnEnable()
         {
             TouchInput.Enable();

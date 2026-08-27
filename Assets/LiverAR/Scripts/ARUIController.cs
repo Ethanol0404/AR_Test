@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace LiverAR.Runtime
@@ -15,6 +16,7 @@ namespace LiverAR.Runtime
         [SerializeField] Text surfaceStatusText;
         [SerializeField] Text informationBodyText;
         [SerializeField] Text modelMessageText;
+        [FormerlySerializedAs("transparencySlider")]
         [SerializeField] Slider selectedOpacitySlider;
         [SerializeField] Slider interactionSensitivitySlider;
         [SerializeField] Slider rotationSpeedSlider;
@@ -26,6 +28,7 @@ namespace LiverAR.Runtime
         [SerializeField] Button diseaseModelButton;
         [SerializeField] GameObject compactMenuPanel;
         [SerializeField] GameObject segmentationMenuPanel;
+        [FormerlySerializedAs("segmentationPanel")]
         [SerializeField] GameObject couinaudSegmentsPanel;
         [SerializeField] GameObject vesselPanel;
         [SerializeField] GameObject informationPanel;
@@ -59,6 +62,7 @@ namespace LiverAR.Runtime
             EnsureInputSystemUiModule();
             AutoWireMissingReferences();
             BuildRuntimeUiIfMissing();
+            EnsureSplitMenuHierarchy();
             EnsureModelMessageBackground();
             EnsureCameraBackgroundToggle();
             BindSceneButtons();
@@ -612,6 +616,106 @@ namespace LiverAR.Runtime
             modelMessageText = CreateRuntimeText(root, "Model Message", "", 14, TextAnchor.LowerCenter, new Vector2(0.20f, 0.26f), new Vector2(0.80f, 0.32f));
         }
 
+        void EnsureSplitMenuHierarchy()
+        {
+            HideObsoleteControls();
+
+            var root = transform;
+            if (compactMenuPanel == null)
+                compactMenuPanel = FindDirectChild("Compact Menu");
+            if (couinaudSegmentsPanel == null)
+                couinaudSegmentsPanel = FindDirectChild("Segmentation Panel") ?? FindDirectChild("Couinaud Segments Panel");
+            if (settingsPanel == null)
+                settingsPanel = FindDirectChild("Settings Panel");
+            if (informationPanel == null)
+                informationPanel = FindDirectChild("Information Panel");
+
+            HideDirectChild("Information Button");
+            HidePanelChild(compactMenuPanel, "Information Button");
+
+            if (compactMenuPanel != null)
+            {
+                EnsurePanelButton(compactMenuPanel, "Model", new Vector2(0.08f, 0.76f), new Vector2(0.84f, 0.16f), SelectNormalModel);
+                EnsurePanelButton(compactMenuPanel, "Segmentation", new Vector2(0.08f, 0.58f), new Vector2(0.84f, 0.16f), OpenSegmentationMenu);
+                EnsurePanelButton(compactMenuPanel, "Settings", new Vector2(0.08f, 0.40f), new Vector2(0.84f, 0.16f), OpenSettingsPanel);
+                EnsurePanelButton(compactMenuPanel, "Reset Placement", new Vector2(0.08f, 0.22f), new Vector2(0.84f, 0.16f), ResetPlacement);
+            }
+
+            if (segmentationMenuPanel == null)
+            {
+                segmentationMenuPanel = CreateRuntimePanel(root, "Segmentation Menu", new Vector2(0.04f, 0.13f), new Vector2(0.32f, 0.30f));
+                CreateRuntimeButton(segmentationMenuPanel.transform, "Couinaud Segments", new Vector2(0.08f, 0.66f), new Vector2(0.84f, 0.20f), OpenCouinaudSegmentsPanel);
+                CreateRuntimeButton(segmentationMenuPanel.transform, "Vessels", new Vector2(0.08f, 0.40f), new Vector2(0.84f, 0.20f), OpenVesselsPanel);
+                CreateRuntimeButton(segmentationMenuPanel.transform, "Back", new Vector2(0.08f, 0.14f), new Vector2(0.84f, 0.20f), ToggleMenu);
+            }
+
+            if (couinaudSegmentsPanel == null)
+                couinaudSegmentsPanel = CreateRuntimePanel(root, "Couinaud Segments Panel", new Vector2(0.04f, 0.13f), new Vector2(0.32f, 0.58f));
+            EnsurePanelButton(couinaudSegmentsPanel, "Show All", new Vector2(0.08f, 0.18f), new Vector2(0.40f, 0.10f), ShowAllSegments);
+            EnsurePanelButton(couinaudSegmentsPanel, "Hide All", new Vector2(0.52f, 0.18f), new Vector2(0.40f, 0.10f), HideAllSegments);
+            EnsurePanelButton(couinaudSegmentsPanel, "Close", new Vector2(0.30f, 0.04f), new Vector2(0.40f, 0.10f), ClosePanels);
+
+            if (vesselPanel == null)
+            {
+                vesselPanel = CreateRuntimePanel(root, "Vessel Panel", new Vector2(0.04f, 0.13f), new Vector2(0.32f, 0.58f));
+                CreateRuntimeButton(vesselPanel.transform, "Show All", new Vector2(0.08f, 0.18f), new Vector2(0.40f, 0.10f), ShowAllVessels);
+                CreateRuntimeButton(vesselPanel.transform, "Hide All", new Vector2(0.52f, 0.18f), new Vector2(0.40f, 0.10f), HideAllVessels);
+                CreateRuntimeButton(vesselPanel.transform, "Close", new Vector2(0.30f, 0.04f), new Vector2(0.40f, 0.10f), ClosePanels);
+            }
+
+            if (transparencyPanel == null)
+            {
+                transparencyPanel = CreateRuntimePanel(root, "Transparency Panel", new Vector2(0.55f, 0.62f), new Vector2(0.40f, 0.22f));
+                transparencyTitleText = CreateRuntimeText(transparencyPanel.transform, "Transparency Title", "Opacity: no selection", 15, TextAnchor.UpperLeft, new Vector2(0.06f, 0.68f), new Vector2(0.94f, 0.94f));
+                CreateRuntimeText(transparencyPanel.transform, "Transparency Label", "Transparency", 13, TextAnchor.MiddleLeft, new Vector2(0.06f, 0.50f), new Vector2(0.44f, 0.66f));
+                selectedOpacitySlider = CreateRuntimeSlider(transparencyPanel.transform, "Selected Opacity", new Vector2(0.06f, 0.34f), new Vector2(0.88f, 0.12f), 0f, 1f, 1f);
+                CreateRuntimeButton(transparencyPanel.transform, "Reset", new Vector2(0.08f, 0.08f), new Vector2(0.36f, 0.16f), ResetSelectedTransparency);
+                CreateRuntimeButton(transparencyPanel.transform, "Close", new Vector2(0.56f, 0.08f), new Vector2(0.36f, 0.16f), () => SetPanelActive(transparencyPanel, null));
+            }
+        }
+
+        GameObject FindDirectChild(string childName)
+        {
+            var child = transform.Find(childName);
+            return child != null ? child.gameObject : null;
+        }
+
+        void HideDirectChild(string childName)
+        {
+            var child = transform.Find(childName);
+            if (child != null)
+                child.gameObject.SetActive(false);
+        }
+
+        static void HidePanelChild(GameObject panel, string childName)
+        {
+            if (panel == null)
+                return;
+
+            var child = panel.transform.Find(childName);
+            if (child != null)
+                child.gameObject.SetActive(false);
+        }
+
+        Button EnsurePanelButton(GameObject panel, string label, Vector2 anchorMin, Vector2 size, UnityEngine.Events.UnityAction action)
+        {
+            if (panel == null)
+                return null;
+
+            var buttonName = label + " Button";
+            var existing = panel.transform.Find(buttonName)?.GetComponent<Button>();
+            if (existing != null)
+            {
+                SetAnchors(existing.GetComponent<RectTransform>(), anchorMin, size);
+                existing.onClick.RemoveAllListeners();
+                existing.onClick.AddListener(action);
+                existing.gameObject.SetActive(true);
+                return existing;
+            }
+
+            return CreateRuntimeButton(panel.transform, label, anchorMin, size, action);
+        }
+
         void EnsureCameraBackgroundToggle()
         {
             if (settingsPanel == null)
@@ -1059,6 +1163,25 @@ namespace LiverAR.Runtime
                 backgroundController = FindAnyObjectByType<ARBackgroundController>();
             if (backgroundController == null)
                 backgroundController = gameObject.AddComponent<ARBackgroundController>();
+
+            EnsureAnatomyInteractionController();
+        }
+
+        void EnsureAnatomyInteractionController()
+        {
+            var interaction = FindAnyObjectByType<AnatomyInteractionController>();
+            var selectionController = FindAnyObjectByType<AnatomySelectionController>();
+            if (interaction == null)
+            {
+                var host = selectionController != null ? selectionController.gameObject : modelInteractionController != null ? modelInteractionController.gameObject : gameObject;
+                interaction = host.AddComponent<AnatomyInteractionController>();
+            }
+
+            var camera = Camera.main;
+            if (camera == null)
+                camera = FindAnyObjectByType<Camera>();
+
+            interaction.Configure(camera, anatomyManager, this, modelInteractionController);
         }
     }
 }
