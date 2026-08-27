@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 687e17ce317a98b4ea915c7f6281c831, type: 3}
+  m_Name: LiverAnatomyConfig
+  m_EditorClassIdentifier: Assembly-CSharp::LiverAR.Runtime.AnatomyModelConfig
+  structures:
+  - structureId: whole-liver
+    displayName: Whole Liver
+    category: 1
+    defaultColor: {r: 0.72, g: 0.18, b: 0.14, a: 1}
+  - structureId: segment-1
+    displayName: Segment 1
+    category: 0
+    defaultColor: {r: 0.78, g: 0.18, b: 0.18, a: 1}
+  - structureId: segment-2
+    displayName: Segment 2
+    category: 0
+    defaultColor: {r: 0.95, g: 0.52, b: 0.16, a: 1}
+  - structureId: segment-3
+    displayName: Segment 3
+    category: 0
+    defaultColor: {r: 0.96, g: 0.75, b: 0.22, a: 1}
+  - structureId: segment-4
+    displayName: Segment 4
+    category: 0
+    defaultColor: {r: 0.38, g: 0.75, b: 0.32, a: 1}
+  - structureId: segment-5
+    displayName: Segment 5
+    category: 0
+    defaultColor: {r: 0.12, g: 0.58, b: 0.82, a: 1}
+  - structureId: segment-6
+    displayName: Segment 6
+    category: 0
+    defaultColor: {r: 0.18, g: 0.32, b: 0.82, a: 1}
+  - structureId: segment-7
+    displayName: Segment 7
+    category: 0
+    defaultColor: {r: 0.47, g: 0.28, b: 0.78, a: 1}
+  - structureId: segment-8
+    displayName: Segment 8
+    category: 0
+    defaultColor: {r: 0.82, g: 0.28, b: 0.62, a: 1}
+  - structureId: blood-vessel
+    displayName: Blood Vessel
+    category: 2
+    defaultColor: {r: 0.10, g: 0.55, b: 0.95, a: 1}

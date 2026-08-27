@@ -24,6 +24,7 @@ namespace LiverAR.Editor
         const string ConfigPath = "Assets/LiverAR/Configs/LiverAnatomyConfig.asset";
         const string MaterialsPath = "Assets/LiverAR/Materials";
         const string SourceModelsPath = "Assets/LiverAR/Models/SourceFrom3DSlicer";
+        const string ConvertedVesselsPath = "Assets/LiverAR/Models/ConvertedVessels";
 
         static readonly StructureSeed[] Seeds =
         {
@@ -36,6 +37,7 @@ namespace LiverAR.Editor
             new StructureSeed("segment-6", "Segment 6", AnatomyCategory.LiverSegment, new Color(0.18f, 0.32f, 0.82f), Vector3.zero),
             new StructureSeed("segment-7", "Segment 7", AnatomyCategory.LiverSegment, new Color(0.47f, 0.28f, 0.78f), Vector3.zero),
             new StructureSeed("segment-8", "Segment 8", AnatomyCategory.LiverSegment, new Color(0.82f, 0.28f, 0.62f), Vector3.zero),
+            new StructureSeed("blood-vessel", "Blood Vessel", AnatomyCategory.Vessel, new Color(0.10f, 0.55f, 0.95f), Vector3.zero),
         };
 
         [MenuItem("Liver AR/Generate Initial AR Scene")]
@@ -44,6 +46,7 @@ namespace LiverAR.Editor
             Directory.CreateDirectory("Assets/LiverAR/Prefabs");
             Directory.CreateDirectory("Assets/LiverAR/Configs");
             Directory.CreateDirectory(MaterialsPath);
+            Directory.CreateDirectory(ConvertedVesselsPath);
             Directory.CreateDirectory("Assets/Scenes");
 
             CreateConfig();
@@ -150,7 +153,9 @@ namespace LiverAR.Editor
             Directory.CreateDirectory("Assets/LiverAR/Prefabs");
             Directory.CreateDirectory("Assets/LiverAR/Configs");
             Directory.CreateDirectory(MaterialsPath);
+            Directory.CreateDirectory(ConvertedVesselsPath);
             AssetDatabase.ImportAsset(SourceModelsPath, ImportAssetOptions.ImportRecursive | ImportAssetOptions.ForceUpdate);
+            AssetDatabase.ImportAsset(ConvertedVesselsPath, ImportAssetOptions.ImportRecursive | ImportAssetOptions.ForceUpdate);
             CreateConfig();
             CreateAnatomyPrefab();
             AssetDatabase.SaveAssets();
@@ -309,6 +314,8 @@ namespace LiverAR.Editor
                     return $"{SourceModelsPath}/liver_segment_7.obj";
                 case "segment-8":
                     return $"{SourceModelsPath}/liver_segment_8.obj";
+                case "blood-vessel":
+                    return $"{ConvertedVesselsPath}/blood-vessel.obj";
                 default:
                     return string.Empty;
             }
