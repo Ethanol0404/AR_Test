@@ -150,9 +150,25 @@ namespace LiverAR.Runtime
                 return null;
 
             var ray = arCamera.ScreenPointToRay(screenPosition);
-            return Physics.Raycast(ray, out var hit, 100f, selectionMask)
-                ? hit.collider.GetComponentInParent<AnatomyPart>()
-                : null;
+            var hits = Physics.RaycastAll(ray, 100f, selectionMask);
+            if (hits.Length == 0)
+                return null;
+
+            System.Array.Sort(hits, (left, right) => left.distance.CompareTo(right.distance));
+            AnatomyPart fallback = null;
+            foreach (var hit in hits)
+            {
+                var part = hit.collider.GetComponentInParent<AnatomyPart>();
+                if (part == null || !part.IsVisible)
+                    continue;
+
+                if (part.Category != AnatomyCategory.WholeLiver)
+                    return part;
+
+                fallback ??= part;
+            }
+
+            return fallback;
         }
 
         void CancelSingleTouch(AnatomyGestureState nextState)

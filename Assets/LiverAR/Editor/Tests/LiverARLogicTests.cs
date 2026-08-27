@@ -81,6 +81,34 @@ namespace LiverAR.Tests.EditMode
         }
 
         [Test]
+        public void TwoFingerRotationKeepsVisibleCenterStableForOffsetMeshes()
+        {
+            var cameraObject = new GameObject("camera");
+            var camera = cameraObject.AddComponent<Camera>();
+            var root = new GameObject("model root");
+            var child = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            child.transform.SetParent(root.transform, false);
+            child.transform.localPosition = new Vector3(2f, 0f, 0f);
+            var controller = CreateModelInteractionController(root.transform);
+            var centerBefore = child.GetComponent<Renderer>().bounds.center;
+
+            controller.ApplyTwoFingerTransform(
+                new Vector2(100f, 100f),
+                new Vector2(200f, 100f),
+                new Vector2(140f, 100f),
+                new Vector2(240f, 100f),
+                camera);
+
+            var centerAfter = child.GetComponent<Renderer>().bounds.center;
+            Assert.That(Vector3.Distance(centerBefore, centerAfter), Is.LessThan(0.001f));
+            Assert.That(Quaternion.Angle(Quaternion.identity, root.transform.rotation), Is.GreaterThan(0.1f));
+
+            Object.DestroyImmediate(controller.gameObject);
+            Object.DestroyImmediate(root);
+            Object.DestroyImmediate(cameraObject);
+        }
+
+        [Test]
         public void TwoFingerPinchScalesRootWithoutTranslation()
         {
             var cameraObject = new GameObject("camera");
