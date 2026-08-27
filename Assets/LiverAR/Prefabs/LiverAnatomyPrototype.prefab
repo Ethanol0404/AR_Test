@@ -33,12 +33,13 @@ Transform:
   - {fileID: 775929129247146695}
   - {fileID: 3729431022796427436}
   - {fileID: 4303557888083429650}
-  - {fileID: 4452278086059380935}
+  - {fileID: 4198219249211029294}
   - {fileID: 266784463011058519}
   - {fileID: 362049359168239790}
   - {fileID: 1078037966764100919}
   - {fileID: 4155411956566627027}
   - {fileID: 4926913454959857780}
+  - {fileID: 2077175940862771845}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &5825757246619742702
@@ -51,7 +52,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a1f12be3277851c42853513dac356ff0, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::LiverAR.Runtime.AnatomyManager
   configuredParts:
   - {fileID: 5717087837155077572}
@@ -63,6 +64,7 @@ MonoBehaviour:
   - {fileID: 2699752669313927869}
   - {fileID: 5036869263016230027}
   - {fileID: 3140417266404491008}
+  - {fileID: 8174994898005830188}
 --- !u!1001 &183794931353788229
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -125,7 +127,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7635826562936255635, guid: 11020dd9323b0a84e83352f3e25738b5, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value: 
+      value:
       objectReference: {fileID: 2100000, guid: 045519976b64e3c4abd3ad51bb302fdc, type: 2}
     - target: {fileID: 919132149155446097, guid: 11020dd9323b0a84e83352f3e25738b5, type: 3}
       propertyPath: m_Name
@@ -183,7 +185,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 037b38abd908a09428a96f16f7a572fa, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::LiverAR.Runtime.AnatomyPart
   structureId: segment-5
   displayName: Segment 5
@@ -259,7 +261,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7635826562936255635, guid: d1d28b2282400734698e3330ae0e7d9d, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value: 
+      value:
       objectReference: {fileID: 2100000, guid: 8c0b5463f3c36f649ac9a026d3ae32fa, type: 2}
     - target: {fileID: 919132149155446097, guid: d1d28b2282400734698e3330ae0e7d9d, type: 3}
       propertyPath: m_Name
@@ -317,7 +319,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 037b38abd908a09428a96f16f7a572fa, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::LiverAR.Runtime.AnatomyPart
   structureId: segment-4
   displayName: Segment 4
@@ -393,7 +395,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7635826562936255635, guid: 7e4327eeaaaf36b44926ae7e6b0943af, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value: 
+      value:
       objectReference: {fileID: 2100000, guid: e5434570564e9c24586645ecd7722a8c, type: 2}
     - target: {fileID: 919132149155446097, guid: 7e4327eeaaaf36b44926ae7e6b0943af, type: 3}
       propertyPath: m_Name
@@ -446,7 +448,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 037b38abd908a09428a96f16f7a572fa, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::LiverAR.Runtime.AnatomyPart
   structureId: segment-6
   displayName: Segment 6
@@ -527,7 +529,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7635826562936255635, guid: 20b83819932fb714f8295b0e092ede8d, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value: 
+      value:
       objectReference: {fileID: 2100000, guid: 6d9e36262adb19b4fb101971cd9ce747, type: 2}
     - target: {fileID: 919132149155446097, guid: 20b83819932fb714f8295b0e092ede8d, type: 3}
       propertyPath: m_Name
@@ -580,7 +582,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 037b38abd908a09428a96f16f7a572fa, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::LiverAR.Runtime.AnatomyPart
   structureId: whole-liver
   displayName: Whole Liver
@@ -598,6 +600,140 @@ Transform:
 MeshRenderer:
   m_CorrespondingSourceObject: {fileID: -7635826562936255635, guid: 20b83819932fb714f8295b0e092ede8d, type: 3}
   m_PrefabInstance: {fileID: 958736841540560172}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &1970648085702927726
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 253178634482260983}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 24f6ed94db294d748ae774e466554ef5, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.001
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 24f6ed94db294d748ae774e466554ef5, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.001
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 24f6ed94db294d748ae774e466554ef5, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.001
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 24f6ed94db294d748ae774e466554ef5, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 24f6ed94db294d748ae774e466554ef5, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 24f6ed94db294d748ae774e466554ef5, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 24f6ed94db294d748ae774e466554ef5, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 24f6ed94db294d748ae774e466554ef5, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 24f6ed94db294d748ae774e466554ef5, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 24f6ed94db294d748ae774e466554ef5, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 24f6ed94db294d748ae774e466554ef5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 24f6ed94db294d748ae774e466554ef5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 24f6ed94db294d748ae774e466554ef5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7635826562936255635, guid: 24f6ed94db294d748ae774e466554ef5, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value:
+      objectReference: {fileID: 2100000, guid: a27fa6b21bf1b3048be7e372d7a9e7cf, type: 2}
+    - target: {fileID: 919132149155446097, guid: 24f6ed94db294d748ae774e466554ef5, type: 3}
+      propertyPath: m_Name
+      value: Blood Vessel
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 24f6ed94db294d748ae774e466554ef5, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8926863397675621931}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 24f6ed94db294d748ae774e466554ef5, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8174994898005830188}
+  m_SourcePrefab: {fileID: 100100000, guid: 24f6ed94db294d748ae774e466554ef5, type: 3}
+--- !u!23 &959616144943164931 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -7635826562936255635, guid: 24f6ed94db294d748ae774e466554ef5, type: 3}
+  m_PrefabInstance: {fileID: 1970648085702927726}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1700192627597334591 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 24f6ed94db294d748ae774e466554ef5, type: 3}
+  m_PrefabInstance: {fileID: 1970648085702927726}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &8926863397675621931
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1700192627597334591}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &8174994898005830188
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1700192627597334591}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 037b38abd908a09428a96f16f7a572fa, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::LiverAR.Runtime.AnatomyPart
+  structureId: blood-vessel
+  displayName: Blood Vessel
+  category: 2
+  defaultColor: {r: 0.1, g: 0.55, b: 0.95, a: 1}
+  renderers:
+  - {fileID: 959616144943164931}
+  highlightColor: {r: 1, g: 0.92, b: 0.25, a: 1}
+--- !u!4 &2077175940862771845 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 24f6ed94db294d748ae774e466554ef5, type: 3}
+  m_PrefabInstance: {fileID: 1970648085702927726}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &3768141509323863879
 PrefabInstance:
@@ -661,7 +797,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7635826562936255635, guid: ae4abbc34b5c7ee438e96afdd157c4ed, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value: 
+      value:
       objectReference: {fileID: 2100000, guid: 12e1386171d7a824e8e903c6a3ad8645, type: 2}
     - target: {fileID: 919132149155446097, guid: ae4abbc34b5c7ee438e96afdd157c4ed, type: 3}
       propertyPath: m_Name
@@ -724,7 +860,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 037b38abd908a09428a96f16f7a572fa, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::LiverAR.Runtime.AnatomyPart
   structureId: segment-1
   displayName: Segment 1
@@ -795,7 +931,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7635826562936255635, guid: 92afd764506ae0a45bb9e33ee5f196b3, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value: 
+      value:
       objectReference: {fileID: 2100000, guid: a022c37322bf4dd47a094eb8b3245702, type: 2}
     - target: {fileID: 919132149155446097, guid: 92afd764506ae0a45bb9e33ee5f196b3, type: 3}
       propertyPath: m_Name
@@ -853,7 +989,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 037b38abd908a09428a96f16f7a572fa, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::LiverAR.Runtime.AnatomyPart
   structureId: segment-2
   displayName: Segment 2
@@ -929,7 +1065,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7635826562936255635, guid: 1e110639735ee5046bd39dfa23c83715, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value: 
+      value:
       objectReference: {fileID: 2100000, guid: 2d70759a12f3d6d45a59447e2bbd4720, type: 2}
     - target: {fileID: 919132149155446097, guid: 1e110639735ee5046bd39dfa23c83715, type: 3}
       propertyPath: m_Name
@@ -946,7 +1082,12 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 8600961814348208851}
   m_SourcePrefab: {fileID: 100100000, guid: 1e110639735ee5046bd39dfa23c83715, type: 3}
---- !u!1 &4452278086059380934 stripped
+--- !u!23 &3152998464894409640 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -7635826562936255635, guid: 1e110639735ee5046bd39dfa23c83715, type: 3}
+  m_PrefabInstance: {fileID: 4452278086059380933}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &3533287785850891668 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 1e110639735ee5046bd39dfa23c83715, type: 3}
   m_PrefabInstance: {fileID: 4452278086059380933}
@@ -957,7 +1098,7 @@ BoxCollider:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4452278086059380934}
+  m_GameObject: {fileID: 3533287785850891668}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -978,27 +1119,22 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4452278086059380934}
+  m_GameObject: {fileID: 3533287785850891668}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 037b38abd908a09428a96f16f7a572fa, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::LiverAR.Runtime.AnatomyPart
   structureId: segment-3
   displayName: Segment 3
   category: 0
   defaultColor: {r: 0.96, g: 0.75, b: 0.22, a: 1}
   renderers:
-  - {fileID: 4452278086059380936}
+  - {fileID: 3152998464894409640}
   highlightColor: {r: 1, g: 0.92, b: 0.25, a: 1}
---- !u!4 &4452278086059380935 stripped
+--- !u!4 &4198219249211029294 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 1e110639735ee5046bd39dfa23c83715, type: 3}
-  m_PrefabInstance: {fileID: 4452278086059380933}
-  m_PrefabAsset: {fileID: 0}
---- !u!23 &4452278086059380936 stripped
-MeshRenderer:
-  m_CorrespondingSourceObject: {fileID: -7635826562936255635, guid: 1e110639735ee5046bd39dfa23c83715, type: 3}
   m_PrefabInstance: {fileID: 4452278086059380933}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &4476653161472193848
@@ -1063,7 +1199,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7635826562936255635, guid: 08d67e3d5c695a14893e8a758de12784, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value: 
+      value:
       objectReference: {fileID: 2100000, guid: a817dc1d7754b784b893e2553c703a72, type: 2}
     - target: {fileID: 919132149155446097, guid: 08d67e3d5c695a14893e8a758de12784, type: 3}
       propertyPath: m_Name
@@ -1121,7 +1257,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 037b38abd908a09428a96f16f7a572fa, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::LiverAR.Runtime.AnatomyPart
   structureId: segment-7
   displayName: Segment 7
@@ -1197,7 +1333,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7635826562936255635, guid: 86108cd15d5d7a540b3762512d71b2c5, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value: 
+      value:
       objectReference: {fileID: 2100000, guid: 29bfed7bd0ef09743b5f73cf4ec856da, type: 2}
     - target: {fileID: 919132149155446097, guid: 86108cd15d5d7a540b3762512d71b2c5, type: 3}
       propertyPath: m_Name
@@ -1255,7 +1391,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 037b38abd908a09428a96f16f7a572fa, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::LiverAR.Runtime.AnatomyPart
   structureId: segment-8
   displayName: Segment 8

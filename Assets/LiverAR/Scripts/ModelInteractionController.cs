@@ -12,6 +12,11 @@ namespace LiverAR.Runtime
         [SerializeField] float minScale = 0.05f;
         [SerializeField] float maxScale = 2f;
         [SerializeField] float rotateDegreesPerPixel = 0.18f;
+        [SerializeField] float yawDegreesPerPixel = 0.12f;
+        [SerializeField] float pitchDegreesPerPixel = 0.10f;
+        [SerializeField] float pinchDeadZonePixels = 2f;
+        [SerializeField] float rotationDeadZonePixels = 1.5f;
+        [SerializeField] float maxPitchDeltaPerFrame = 5f;
         [SerializeField] float minCameraDistance = 0.35f;
         [SerializeField] float maxCameraDistance = 3f;
         [SerializeField] float minVerticalOffset = -0.6f;
@@ -23,8 +28,6 @@ namespace LiverAR.Runtime
         Vector3 originalPosition;
         Quaternion originalRotation;
         Vector3 originalScale;
-        float previousPinchDistance;
-        float previousTwistAngle;
 
         public Transform ModelRoot
         {
@@ -107,9 +110,6 @@ namespace LiverAR.Runtime
                 return;
             }
 
-            previousPinchDistance = 0f;
-            previousTwistAngle = 0f;
-
             HandleEditorScale();
         }
 
@@ -119,34 +119,56 @@ namespace LiverAR.Runtime
             if (touches.Count < 2 || TouchInput.IsAnyTouchOverUi())
                 return;
 
-            var distance = Vector2.Distance(touches[0].screenPosition, touches[1].screenPosition);
-            var twistAngle = Mathf.Atan2(
-                touches[1].screenPosition.y - touches[0].screenPosition.y,
-                touches[1].screenPosition.x - touches[0].screenPosition.x) * Mathf.Rad2Deg;
+            ApplyTwoFingerTransform(
+                touches[0].screenPosition - touches[0].delta,
+                touches[1].screenPosition - touches[1].delta,
+                touches[0].screenPosition,
+                touches[1].screenPosition,
+                arCamera);
+        }
 
-            if (previousPinchDistance <= 0f)
-            {
-                previousPinchDistance = distance;
-                previousTwistAngle = twistAngle;
+        public void ApplyTwoFingerTransform(Vector2 previousFirst, Vector2 previousSecond, Vector2 currentFirst, Vector2 currentSecond, Camera camera)
+        {
+            var targetCamera = ResolveCamera(camera);
+            if (modelRoot == null || targetCamera == null)
                 return;
-            }
 
-            var ratio = distance / previousPinchDistance;
-            var current = modelRoot.localScale.x;
-            var adjustedRatio = 1f + ((ratio - 1f) * settings.ScaleSensitivity);
-            var next = ClampScale(current * adjustedRatio, minScale, maxScale);
-            modelRoot.localScale = Vector3.one * next;
-            previousPinchDistance = distance;
-
-            var targetCamera = ResolveCamera(arCamera);
-            if (targetCamera != null)
+            var previousDistance = Vector2.Distance(previousFirst, previousSecond);
+            var currentDistance = Vector2.Distance(currentFirst, currentSecond);
+            var distanceDelta = currentDistance - previousDistance;
+            if (Mathf.Abs(distanceDelta) >= pinchDeadZonePixels)
             {
-                var twistDelta = Mathf.DeltaAngle(previousTwistAngle, twistAngle);
-                modelRoot.Rotate(targetCamera.transform.up, twistDelta * settings.RotationSpeed, Space.World);
-                AdjustDepth((touches[0].delta.y + touches[1].delta.y) * 0.5f, targetCamera);
+                var ratio = currentDistance / Mathf.Max(previousDistance, 0.001f);
+                var current = modelRoot.localScale.x;
+                var adjustedRatio = 1f + ((ratio - 1f) * settings.ScaleSensitivity);
+                var next = ClampScale(current * adjustedRatio, minScale, maxScale);
+                modelRoot.localScale = Vector3.one * next;
             }
 
-            previousTwistAngle = twistAngle;
+            var previousMidpoint = (previousFirst + previousSecond) * 0.5f;
+            var currentMidpoint = (currentFirst + currentSecond) * 0.5f;
+            var averageDelta = currentMidpoint - previousMidpoint;
+            if (averageDelta.magnitude >= rotationDeadZonePixels)
+            {
+                var yaw = averageDelta.x * yawDegreesPerPixel * settings.RotationSpeed;
+                var pitch = Mathf.Clamp(-averageDelta.y * pitchDegreesPerPixel * settings.RotationSpeed, -maxPitchDeltaPerFrame, maxPitchDeltaPerFrame);
+                RotateAroundModelPivot(targetCamera.transform.up, yaw);
+                RotateAroundModelPivot(targetCamera.transform.right, pitch);
+            }
+
+            var previousTwistAngle = Mathf.Atan2(previousSecond.y - previousFirst.y, previousSecond.x - previousFirst.x) * Mathf.Rad2Deg;
+            var currentTwistAngle = Mathf.Atan2(currentSecond.y - currentFirst.y, currentSecond.x - currentFirst.x) * Mathf.Rad2Deg;
+            var twistDelta = Mathf.DeltaAngle(previousTwistAngle, currentTwistAngle);
+            if (Mathf.Abs(twistDelta) >= rotationDeadZonePixels)
+                RotateAroundModelPivot(targetCamera.transform.forward, -twistDelta * rotateDegreesPerPixel * settings.RotationSpeed);
+        }
+
+        void RotateAroundModelPivot(Vector3 axis, float degrees)
+        {
+            if (modelRoot == null || axis.sqrMagnitude < 0.000001f || Mathf.Abs(degrees) < 0.001f)
+                return;
+
+            modelRoot.Rotate(axis.normalized, degrees, Space.World);
         }
 
         void HandleEditorScale()

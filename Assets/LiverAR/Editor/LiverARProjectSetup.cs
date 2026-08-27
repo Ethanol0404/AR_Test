@@ -257,7 +257,7 @@ namespace LiverAR.Editor
 
             obj.transform.SetParent(parent);
             obj.transform.localPosition = seed.Position;
-            obj.transform.localRotation = seed.Category == AnatomyCategory.Vessel ? Quaternion.Euler(72f, 0f, 25f) : Quaternion.identity;
+            obj.transform.localRotation = Quaternion.identity;
 
             var renderers = obj.GetComponentsInChildren<Renderer>(true);
             foreach (var renderer in renderers)
@@ -368,7 +368,7 @@ namespace LiverAR.Editor
 
             var segmentationMenuPanel = CreatePanel(canvasObject.transform, "Segmentation Menu", new Vector2(0.04f, 0.13f), new Vector2(0.32f, 0.30f));
             CreateButton(segmentationMenuPanel.transform, "Couinaud Segments", new Vector2(0.08f, 0.66f), new Vector2(0.84f, 0.20f), () => uiController.OpenCouinaudSegmentsPanel());
-            CreateButton(segmentationMenuPanel.transform, "Vessels", new Vector2(0.08f, 0.40f), new Vector2(0.84f, 0.20f), () => uiController.OpenVesselsPanel());
+            CreateButton(segmentationMenuPanel.transform, "Blood Vessel", new Vector2(0.08f, 0.40f), new Vector2(0.84f, 0.20f), () => uiController.OpenVesselsPanel());
             CreateButton(segmentationMenuPanel.transform, "Back", new Vector2(0.08f, 0.14f), new Vector2(0.84f, 0.20f), () => uiController.ToggleMenu());
 
             var couinaudSegmentsPanel = CreatePanel(canvasObject.transform, "Couinaud Segments Panel", new Vector2(0.04f, 0.13f), new Vector2(0.32f, 0.58f));

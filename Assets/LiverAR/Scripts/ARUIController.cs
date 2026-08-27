@@ -319,7 +319,7 @@ namespace LiverAR.Runtime
             if (segmentationMenuPanel == null)
                 return;
 
-            var vesselButton = segmentationMenuPanel.transform.Find("Vessels Button");
+            var vesselButton = segmentationMenuPanel.transform.Find("Blood Vessel Button") ?? segmentationMenuPanel.transform.Find("Vessels Button");
             if (vesselButton != null)
                 vesselButton.gameObject.SetActive(HasAnatomyPart(AnatomyCategory.Vessel));
         }
@@ -580,7 +580,7 @@ namespace LiverAR.Runtime
 
             segmentationMenuPanel = CreateRuntimePanel(root, "Segmentation Menu", new Vector2(0.04f, 0.13f), new Vector2(0.32f, 0.30f));
             CreateRuntimeButton(segmentationMenuPanel.transform, "Couinaud Segments", new Vector2(0.08f, 0.66f), new Vector2(0.84f, 0.20f), OpenCouinaudSegmentsPanel);
-            CreateRuntimeButton(segmentationMenuPanel.transform, "Vessels", new Vector2(0.08f, 0.40f), new Vector2(0.84f, 0.20f), OpenVesselsPanel);
+            CreateRuntimeButton(segmentationMenuPanel.transform, "Blood Vessel", new Vector2(0.08f, 0.40f), new Vector2(0.84f, 0.20f), OpenVesselsPanel);
             CreateRuntimeButton(segmentationMenuPanel.transform, "Back", new Vector2(0.08f, 0.14f), new Vector2(0.84f, 0.20f), ToggleMenu);
 
             couinaudSegmentsPanel = CreateRuntimePanel(root, "Couinaud Segments Panel", new Vector2(0.04f, 0.13f), new Vector2(0.32f, 0.58f));
@@ -645,8 +645,13 @@ namespace LiverAR.Runtime
             {
                 segmentationMenuPanel = CreateRuntimePanel(root, "Segmentation Menu", new Vector2(0.04f, 0.13f), new Vector2(0.32f, 0.30f));
                 CreateRuntimeButton(segmentationMenuPanel.transform, "Couinaud Segments", new Vector2(0.08f, 0.66f), new Vector2(0.84f, 0.20f), OpenCouinaudSegmentsPanel);
-                CreateRuntimeButton(segmentationMenuPanel.transform, "Vessels", new Vector2(0.08f, 0.40f), new Vector2(0.84f, 0.20f), OpenVesselsPanel);
+                CreateRuntimeButton(segmentationMenuPanel.transform, "Blood Vessel", new Vector2(0.08f, 0.40f), new Vector2(0.84f, 0.20f), OpenVesselsPanel);
                 CreateRuntimeButton(segmentationMenuPanel.transform, "Back", new Vector2(0.08f, 0.14f), new Vector2(0.84f, 0.20f), ToggleMenu);
+            }
+            else
+            {
+                EnsurePanelButton(segmentationMenuPanel, "Blood Vessel", new Vector2(0.08f, 0.40f), new Vector2(0.84f, 0.20f), OpenVesselsPanel);
+                HidePanelChild(segmentationMenuPanel, "Vessels Button");
             }
 
             if (couinaudSegmentsPanel == null)
@@ -752,6 +757,7 @@ namespace LiverAR.Runtime
             BindPanelButton(compactMenuPanel, "Settings Button", OpenSettingsPanel);
             BindPanelButton(compactMenuPanel, "Reset Placement Button", ResetPlacement);
             BindPanelButton(segmentationMenuPanel, "Couinaud Segments Button", OpenCouinaudSegmentsPanel);
+            BindPanelButton(segmentationMenuPanel, "Blood Vessel Button", OpenVesselsPanel);
             BindPanelButton(segmentationMenuPanel, "Vessels Button", OpenVesselsPanel);
             BindPanelButton(segmentationMenuPanel, "Back Button", ToggleMenu);
             BindPanelButton(couinaudSegmentsPanel, "Show All Button", ShowAllSegments);

@@ -53,6 +53,59 @@ namespace LiverAR.Tests.EditMode
         }
 
         [Test]
+        public void TwoFingerAverageMovementRotatesRootWithoutTranslationOrScale()
+        {
+            var cameraObject = new GameObject("camera");
+            var camera = cameraObject.AddComponent<Camera>();
+            var model = new GameObject("model");
+            model.transform.position = new Vector3(0f, 0f, 1f);
+            model.transform.localScale = Vector3.one * 0.4f;
+            var controller = CreateModelInteractionController(model.transform);
+            var initialPosition = model.transform.position;
+            var initialScale = model.transform.localScale;
+
+            controller.ApplyTwoFingerTransform(
+                new Vector2(100f, 100f),
+                new Vector2(200f, 100f),
+                new Vector2(140f, 100f),
+                new Vector2(240f, 100f),
+                camera);
+
+            Assert.That(model.transform.position, Is.EqualTo(initialPosition));
+            Assert.That(model.transform.localScale, Is.EqualTo(initialScale));
+            Assert.That(Quaternion.Angle(Quaternion.identity, model.transform.rotation), Is.GreaterThan(0.1f));
+
+            Object.DestroyImmediate(controller.gameObject);
+            Object.DestroyImmediate(model);
+            Object.DestroyImmediate(cameraObject);
+        }
+
+        [Test]
+        public void TwoFingerPinchScalesRootWithoutTranslation()
+        {
+            var cameraObject = new GameObject("camera");
+            var camera = cameraObject.AddComponent<Camera>();
+            var model = new GameObject("model");
+            model.transform.position = new Vector3(0f, 0f, 1f);
+            var controller = CreateModelInteractionController(model.transform);
+            var initialPosition = model.transform.position;
+
+            controller.ApplyTwoFingerTransform(
+                new Vector2(100f, 100f),
+                new Vector2(200f, 100f),
+                new Vector2(80f, 100f),
+                new Vector2(220f, 100f),
+                camera);
+
+            Assert.That(model.transform.position, Is.EqualTo(initialPosition));
+            Assert.That(model.transform.localScale.x, Is.GreaterThan(1f));
+
+            Object.DestroyImmediate(controller.gameObject);
+            Object.DestroyImmediate(model);
+            Object.DestroyImmediate(cameraObject);
+        }
+
+        [Test]
         public void DepthConstraintKeepsPitchedCameraForwardDistanceAndVerticalOffsetBounded()
         {
             var cameraObject = new GameObject("camera");
@@ -321,7 +374,7 @@ namespace LiverAR.Tests.EditMode
 
             controller.OpenSegmentationMenu();
 
-            var vesselsButton = GetPrivateField<GameObject>(controller, "segmentationMenuPanel").transform.Find("Vessels Button").gameObject;
+            var vesselsButton = GetPrivateField<GameObject>(controller, "segmentationMenuPanel").transform.Find("Blood Vessel Button").gameObject;
             Assert.That(vesselsButton.activeSelf, Is.False);
 
             var vessel = CreatePart("portal-vein", "Portal Vein", AnatomyCategory.Vessel);
