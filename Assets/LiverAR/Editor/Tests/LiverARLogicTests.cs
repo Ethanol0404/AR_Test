@@ -30,6 +30,52 @@ namespace LiverAR.Tests.EditMode
         }
 
         [Test]
+        public void CameraRelativeTranslationMovesRootAndPreservesRotationAndScale()
+        {
+            var cameraObject = new GameObject("camera");
+            var camera = cameraObject.AddComponent<Camera>();
+            var model = new GameObject("model");
+            model.transform.SetPositionAndRotation(new Vector3(0f, 0f, 1f), Quaternion.Euler(10f, 20f, 30f));
+            model.transform.localScale = Vector3.one * 0.4f;
+            var controller = CreateModelInteractionController(model.transform);
+
+            controller.TranslateCameraRelative(new Vector2(100f, 50f), camera);
+
+            Assert.That(model.transform.position.x, Is.EqualTo(0.15f).Within(0.001f));
+            Assert.That(model.transform.position.y, Is.EqualTo(0.075f).Within(0.001f));
+            Assert.That(model.transform.position.z, Is.EqualTo(1f).Within(0.001f));
+            Assert.That(model.transform.rotation, Is.EqualTo(Quaternion.Euler(10f, 20f, 30f)));
+            Assert.That(model.transform.localScale, Is.EqualTo(Vector3.one * 0.4f));
+
+            Object.DestroyImmediate(controller.gameObject);
+            Object.DestroyImmediate(model);
+            Object.DestroyImmediate(cameraObject);
+        }
+
+        [Test]
+        public void DepthConstraintKeepsPitchedCameraForwardDistanceAndVerticalOffsetBounded()
+        {
+            var cameraObject = new GameObject("camera");
+            var camera = cameraObject.AddComponent<Camera>();
+            camera.transform.rotation = Quaternion.Euler(85f, 0f, 0f);
+            var model = new GameObject("model");
+            model.transform.position = camera.transform.forward;
+            var controller = CreateModelInteractionController(model.transform);
+            SetModelInteractionField(controller, "minVerticalOffset", 0f);
+            SetModelInteractionField(controller, "maxVerticalOffset", 0f);
+
+            controller.AdjustDepth(1000f, camera);
+
+            var forwardDistance = Vector3.Dot(model.transform.position - camera.transform.position, camera.transform.forward);
+            Assert.That(forwardDistance, Is.EqualTo(3f).Within(0.001f));
+            Assert.That(model.transform.position.y - camera.transform.position.y, Is.EqualTo(0f).Within(0.001f));
+
+            Object.DestroyImmediate(controller.gameObject);
+            Object.DestroyImmediate(model);
+            Object.DestroyImmediate(cameraObject);
+        }
+
+        [Test]
         public void AnatomyPartVisibilityControlsRenderersAndColliders()
         {
             var root = new GameObject("segment");
@@ -426,6 +472,20 @@ namespace LiverAR.Tests.EditMode
             var part = root.AddComponent<AnatomyPart>();
             part.Configure(id, displayName, category, Color.white, new[] { renderer });
             return part;
+        }
+
+        static ModelInteractionController CreateModelInteractionController(Transform modelRoot)
+        {
+            var controllerObject = new GameObject("model-interaction");
+            controllerObject.SetActive(false);
+            var controller = controllerObject.AddComponent<ModelInteractionController>();
+            controller.ModelRoot = modelRoot;
+            return controller;
+        }
+
+        static void SetModelInteractionField(ModelInteractionController controller, string name, object value)
+        {
+            typeof(ModelInteractionController).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(controller, value);
         }
 
         static ARUIController CreateUiController(AnatomyManager anatomyManager)

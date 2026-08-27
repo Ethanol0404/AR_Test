@@ -1,9 +1,6 @@
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.ARFoundation;
-using UnityEngine.XR.ARSubsystems;
-using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 
 namespace LiverAR.Runtime
 {
@@ -23,7 +20,6 @@ namespace LiverAR.Runtime
         [SerializeField] float depthMetersPerPixel = 0.002f;
         [SerializeField] LiverARSettings settings = new LiverARSettings();
 
-        static readonly List<ARRaycastHit> Hits = new List<ARRaycastHit>();
         Vector3 originalPosition;
         Quaternion originalRotation;
         Vector3 originalScale;
@@ -117,32 +113,12 @@ namespace LiverAR.Runtime
             HandleEditorScale();
         }
 
-        void HandleSingleTouch(Touch touch)
-        {
-            if (!TouchInput.IsMoved(touch))
-                return;
-
-            if (raycastManager != null && raycastManager.Raycast(touch.screenPosition, Hits, TrackableType.PlaneWithinPolygon))
-            {
-                modelRoot.position = Hits[0].pose.position;
-                return;
-            }
-
-            modelRoot.Rotate(Vector3.up, -touch.delta.x * rotateDegreesPerPixel * settings.RotationSpeed, Space.World);
-        }
-
         void HandleSinglePointer(TouchInput.PointerInput pointer)
         {
             if (!TouchInput.IsMoved(pointer))
                 return;
 
-            if (raycastManager != null && raycastManager.Raycast(pointer.ScreenPosition, Hits, TrackableType.PlaneWithinPolygon))
-            {
-                modelRoot.position = Hits[0].pose.position;
-                return;
-            }
-
-            modelRoot.Rotate(Vector3.up, -pointer.Delta.x * rotateDegreesPerPixel * settings.RotationSpeed, Space.World);
+            TranslateCameraRelative(pointer.Delta, arCamera);
         }
 
         void HandlePinch()
@@ -181,19 +157,25 @@ namespace LiverAR.Runtime
 
         Camera ResolveCamera(Camera camera)
         {
-            return camera != null ? camera : arCamera;
+            return camera != null ? camera : arCamera != null ? arCamera : Camera.main;
         }
 
         void SetConstrainedPosition(Vector3 position, Camera camera)
         {
             var cameraTransform = camera.transform;
+            var verticalOffset = position.y - cameraTransform.position.y;
+            position.y = cameraTransform.position.y + ClampVertical(verticalOffset, minVerticalOffset, maxVerticalOffset);
+
             var relative = position - cameraTransform.position;
             var forwardDistance = Vector3.Dot(relative, cameraTransform.forward);
             var clampedForwardDistance = ClampDistance(forwardDistance, minCameraDistance, maxCameraDistance);
-            position += cameraTransform.forward * (clampedForwardDistance - forwardDistance);
+            var horizontalForward = Vector3.ProjectOnPlane(cameraTransform.forward, Vector3.up);
 
-            var verticalOffset = position.y - cameraTransform.position.y;
-            position.y = cameraTransform.position.y + ClampVertical(verticalOffset, minVerticalOffset, maxVerticalOffset);
+            if (horizontalForward.sqrMagnitude > 0.000001f)
+                position += horizontalForward * ((clampedForwardDistance - forwardDistance) / horizontalForward.sqrMagnitude);
+            else
+                position += cameraTransform.forward * (clampedForwardDistance - forwardDistance);
+
             modelRoot.position = position;
         }
 
