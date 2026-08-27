@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using System.Reflection;
 using UnityEngine;
 using LiverAR.Runtime;
 
@@ -204,6 +205,18 @@ namespace LiverAR.Tests.EditMode
         {
             Assert.That(AnatomyUiPanelState.ShouldCloseDetailOverlayOnNavigationChange(true), Is.False);
             Assert.That(AnatomyUiPanelState.ShouldCloseDetailOverlayOnNavigationChange(false), Is.True);
+        }
+
+        [Test]
+        public void RuntimeMenuExposesHierarchyNavigationApis()
+        {
+            var controllerType = typeof(ARUIController);
+
+            Assert.That(controllerType.GetMethod("OpenSegmentationMenu", BindingFlags.Instance | BindingFlags.Public), Is.Not.Null);
+            Assert.That(controllerType.GetMethod("OpenCouinaudSegmentsPanel", BindingFlags.Instance | BindingFlags.Public), Is.Not.Null);
+            Assert.That(controllerType.GetMethod("OpenVesselsPanel", BindingFlags.Instance | BindingFlags.Public), Is.Not.Null);
+            Assert.That(controllerType.GetMethod("OpenInformationPanelForSelection", BindingFlags.Instance | BindingFlags.Public), Is.Not.Null);
+            Assert.That(controllerType.GetMethod("OpenTransparencyPanelForSelection", BindingFlags.Instance | BindingFlags.Public), Is.Not.Null);
         }
 
         [Test]
