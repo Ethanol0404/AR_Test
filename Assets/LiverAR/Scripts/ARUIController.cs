@@ -394,18 +394,7 @@ namespace LiverAR.Runtime
                 return;
             }
 
-            if (infoDatabase != null && infoDatabase.TryGetInfo(part.StructureId, out var record))
-            {
-                informationBodyText.text =
-                    $"Location: {ValueOrPlaceholder(record.location)}\n" +
-                    $"Blood supply: {ValueOrPlaceholder(record.bloodSupply)}\n" +
-                    $"Venous drainage: {ValueOrPlaceholder(record.venousDrainage)}\n" +
-                    $"Function: {ValueOrPlaceholder(record.function)}\n\n" +
-                    ValueOrPlaceholder(record.educationalDescription);
-                return;
-            }
-
-            informationBodyText.text = $"{part.DisplayName}\n{part.Category}\n\nEducational information placeholder - verified content not yet assigned.";
+            informationBodyText.text = $"{part.DisplayName}\n\nInformation\nContent will be added in future development.";
         }
 
         static string ValueOrPlaceholder(string value)

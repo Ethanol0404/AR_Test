@@ -216,11 +216,18 @@ namespace LiverAR.Editor
         static GameObject CreateAnatomyPrefab()
         {
             var root = new GameObject("LiverAnatomyPrototype");
+            var segmentsRoot = new GameObject("CouinaudSegments").transform;
+            segmentsRoot.SetParent(root.transform, false);
+            var vesselRoot = new GameObject("BloodVessel").transform;
+            vesselRoot.SetParent(root.transform, false);
             var parts = new List<AnatomyPart>();
 
             foreach (var seed in Seeds)
             {
-                var part = CreateStructure(root.transform, seed);
+                var parent = seed.Category == AnatomyCategory.LiverSegment
+                    ? segmentsRoot
+                    : seed.Category == AnatomyCategory.Vessel ? vesselRoot : root.transform;
+                var part = CreateStructure(parent, seed);
                 if (part != null)
                     parts.Add(part);
             }
@@ -236,13 +243,23 @@ namespace LiverAR.Editor
 
         static void AlignVesselToLiver(Transform root)
         {
-            var liver = root.Find("Whole Liver");
-            var vessel = root.Find("Blood Vessel");
-            if (liver == null || vessel == null)
+            var liver = root.GetComponentsInChildren<AnatomyPart>(true);
+            AnatomyPart liverPart = null;
+            AnatomyPart vesselPart = null;
+            foreach (var part in liver)
+            {
+                if (part.Category == AnatomyCategory.WholeLiver)
+                    liverPart = part;
+                else if (part.Category == AnatomyCategory.Vessel)
+                    vesselPart = part;
+            }
+            var liverObject = liverPart != null ? liverPart.transform : null;
+            var vesselObject = vesselPart != null ? vesselPart.transform : null;
+            if (liverObject == null || vesselObject == null)
                 return;
 
-            var liverRenderers = liver.GetComponentsInChildren<Renderer>(true);
-            var vesselRenderers = vessel.GetComponentsInChildren<Renderer>(true);
+            var liverRenderers = liverObject.GetComponentsInChildren<Renderer>(true);
+            var vesselRenderers = vesselObject.GetComponentsInChildren<Renderer>(true);
             if (liverRenderers.Length == 0 || vesselRenderers.Length == 0)
                 return;
 
@@ -254,7 +271,7 @@ namespace LiverAR.Editor
             foreach (var renderer in vesselRenderers)
                 vesselBounds.Encapsulate(renderer.bounds);
 
-            vessel.position += liverBounds.center - vesselBounds.center;
+            vesselObject.position += liverBounds.center - vesselBounds.center;
         }
 
         static AnatomyPart CreateStructure(Transform parent, StructureSeed seed)
@@ -350,7 +367,12 @@ namespace LiverAR.Editor
         {
             var materialPath = $"{MaterialsPath}/{seed.Id}-material.mat";
             var existing = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
-            var material = existing != null ? existing : new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            var shader = Shader.Find("Universal Render Pipeline/Lit");
+            if (shader == null)
+                shader = Shader.Find("Standard");
+            var material = existing != null ? existing : new Material(shader);
+            if (material.shader == null && shader != null)
+                material.shader = shader;
             material.name = seed.Id + "-material";
             material.SetColor("_BaseColor", seed.Color);
             if (existing == null)

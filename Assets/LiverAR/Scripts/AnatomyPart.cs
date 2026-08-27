@@ -138,6 +138,15 @@ namespace LiverAR.Runtime
                 if (material == null)
                     continue;
 
+                if (material.shader == null)
+                {
+                    var fallbackShader = Shader.Find("Universal Render Pipeline/Lit");
+                    if (fallbackShader == null)
+                        fallbackShader = Shader.Find("Standard");
+                    if (fallbackShader != null)
+                        material.shader = fallbackShader;
+                }
+
                 if (!originalRenderQueues.ContainsKey(material))
                     originalRenderQueues[material] = material.renderQueue;
 
