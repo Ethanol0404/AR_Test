@@ -16,6 +16,20 @@ namespace LiverAR.Tests.EditMode
         }
 
         [Test]
+        public void CameraDistanceClampKeepsModelInReach()
+        {
+            Assert.That(ModelInteractionController.ClampDistance(0.1f, 0.35f, 3f), Is.EqualTo(0.35f));
+            Assert.That(ModelInteractionController.ClampDistance(4f, 0.35f, 3f), Is.EqualTo(3f));
+        }
+
+        [Test]
+        public void VerticalClampKeepsModelInConfiguredRange()
+        {
+            Assert.That(ModelInteractionController.ClampVertical(3f, -0.6f, 0.8f), Is.EqualTo(0.8f));
+            Assert.That(ModelInteractionController.ClampVertical(-2f, -0.6f, 0.8f), Is.EqualTo(-0.6f));
+        }
+
+        [Test]
         public void AnatomyPartVisibilityControlsRenderersAndColliders()
         {
             var root = new GameObject("segment");
