@@ -98,7 +98,6 @@ namespace LiverAR.Runtime
             if (selectionOutline == null)
                 selectionOutline = GetComponent<AnatomySelectionOutline>() ?? gameObject.AddComponent<AnatomySelectionOutline>();
             UpdateSelectionOutline();
-            ApplyAppearance();
         }
 
         public void SetColor(Color color)

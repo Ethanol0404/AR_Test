@@ -314,6 +314,28 @@ namespace LiverAR.Tests.EditMode
         }
 
         [Test]
+        public void FocusSegmentSelectsWithoutChangingOtherSegmentOpacity()
+        {
+            var managerObject = new GameObject("manager");
+            var manager = managerObject.AddComponent<AnatomyManager>();
+            var first = CreatePart("segment-i", "Segment I");
+            var second = CreatePart("segment-ii", "Segment II");
+            manager.SetConfiguredParts(new[] { first, second });
+            first.SetOpacity(0.7f);
+            second.SetOpacity(0.45f);
+
+            manager.FocusSegment(first);
+
+            Assert.That(first.IsSelected, Is.True);
+            Assert.That(first.Opacity, Is.EqualTo(0.7f));
+            Assert.That(second.Opacity, Is.EqualTo(0.45f));
+
+            Object.DestroyImmediate(first.gameObject);
+            Object.DestroyImmediate(second.gameObject);
+            Object.DestroyImmediate(managerObject);
+        }
+
+        [Test]
         public void SurfaceStatusMessagesStayShortAndMatchPlacementFlow()
         {
             Assert.That(ARSurfaceStatusMessage.GetMessage(ARSurfaceState.Initialising), Is.EqualTo("Starting AR..."));

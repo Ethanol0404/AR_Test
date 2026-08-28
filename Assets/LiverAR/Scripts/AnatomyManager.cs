@@ -104,6 +104,12 @@ namespace LiverAR.Runtime
             ClearSelection();
         }
 
+        public void FocusSegment(AnatomyPart selected, float otherOpacity = 0.4f)
+        {
+            if (selected == null || selected.Category != AnatomyCategory.LiverSegment || !partsById.ContainsValue(selected)) return;
+            Select(selected);
+        }
+
         public void ResetAllAppearances()
         {
             foreach (var part in partsById.Values)
