@@ -104,6 +104,9 @@ namespace LiverAR.Runtime
             var root = startedPart != null ? startedPart.GetComponentInParent<LiverModelRoot>() : null;
             if (root != null)
                 modelWorkspace?.Activate(root);
+            var manager = root != null ? root.AnatomyManager : anatomyManager;
+            manager?.Select(startedPart);
+            uiController?.SetActiveSelection(manager, startedPart);
             state = startedPart != null ? AnatomyGestureState.LongPressPending : AnatomyGestureState.PossibleTap;
         }
 
