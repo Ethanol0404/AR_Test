@@ -10,6 +10,7 @@ namespace LiverAR.Runtime
         [SerializeField] int instanceId;
         [SerializeField] string displayName;
         [SerializeField] GameObject selectionIndicator;
+        LiverModelSelectionOutline selectionOutline;
 
         public AnatomyManager AnatomyManager { get; private set; }
         public int InstanceId => instanceId;
@@ -42,6 +43,10 @@ namespace LiverAR.Runtime
             EnsureIndicator();
             if (selectionIndicator != null)
                 selectionIndicator.SetActive(active);
+
+            if (selectionOutline == null)
+                selectionOutline = GetComponent<LiverModelSelectionOutline>() ?? gameObject.AddComponent<LiverModelSelectionOutline>();
+            selectionOutline.SetVisible(active);
         }
 
         public void CopyRuntimeStateFrom(LiverModelRoot source)
@@ -120,6 +125,69 @@ namespace LiverAR.Runtime
             }
 
             return hasBounds;
+        }
+    }
+
+    sealed class LiverModelSelectionOutline : MonoBehaviour
+    {
+        static Material sharedMaterial;
+        readonly List<GameObject> outlines = new List<GameObject>();
+        bool initialized;
+
+        public void SetVisible(bool visible)
+        {
+            EnsureInitialized();
+            foreach (var outline in outlines)
+                if (outline != null)
+                    outline.SetActive(visible);
+        }
+
+        void EnsureInitialized()
+        {
+            if (initialized)
+                return;
+
+            initialized = true;
+            var material = GetSharedMaterial();
+            if (material == null)
+                return;
+
+            foreach (var source in GetComponentsInChildren<MeshFilter>(true))
+            {
+                if (source.sharedMesh == null || source.gameObject.name == "Selection Outline" || source.gameObject.name == "Model Selection Outline")
+                    continue;
+
+                var sourceRenderer = source.GetComponent<MeshRenderer>();
+                if (sourceRenderer == null)
+                    continue;
+
+                var outline = new GameObject("Model Selection Outline");
+                outline.transform.SetParent(source.transform.parent, false);
+                outline.transform.localPosition = source.transform.localPosition;
+                outline.transform.localRotation = source.transform.localRotation;
+                outline.transform.localScale = source.transform.localScale * 1.025f;
+                outline.AddComponent<MeshFilter>().sharedMesh = source.sharedMesh;
+                outline.AddComponent<MeshRenderer>().sharedMaterial = material;
+                outline.SetActive(false);
+                outlines.Add(outline);
+            }
+        }
+
+        static Material GetSharedMaterial()
+        {
+            if (sharedMaterial != null)
+                return sharedMaterial;
+
+            var shader = Shader.Find("Universal Render Pipeline/Unlit");
+            if (shader == null)
+                return null;
+
+            sharedMaterial = new Material(shader) { hideFlags = HideFlags.DontSave };
+            sharedMaterial.SetColor("_BaseColor", new Color(1f, 1f, 1f, 0.98f));
+            sharedMaterial.SetFloat("_Cull", (float)UnityEngine.Rendering.CullMode.Front);
+            sharedMaterial.SetFloat("_ZWrite", 0f);
+            sharedMaterial.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent + 20;
+            return sharedMaterial;
         }
     }
 }

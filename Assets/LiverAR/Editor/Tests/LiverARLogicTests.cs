@@ -231,6 +231,46 @@ namespace LiverAR.Tests.EditMode
         }
 
         [Test]
+        public void DuplicateRootCopiesEachPartsVisibilityAndOpacity()
+        {
+            var source = CreateLiverRootWithParts("source");
+            var sourceSegment = source.AnatomyManager.TryGetPart("segment-1", out var segment) ? segment : null;
+            var sourceVessel = source.AnatomyManager.TryGetPart("vessel", out var vessel) ? vessel : null;
+            sourceSegment.SetVisible(false);
+            sourceSegment.SetOpacity(0.4f);
+            sourceVessel.SetOpacity(0.65f);
+
+            var duplicate = CreateLiverRootWithParts("duplicate");
+            duplicate.CopyRuntimeStateFrom(source);
+
+            Assert.That(duplicate.AnatomyManager.TryGetPart("segment-1", out var copiedSegment), Is.True);
+            Assert.That(copiedSegment.IsVisible, Is.False);
+            Assert.That(copiedSegment.Opacity, Is.EqualTo(0.4f));
+            Assert.That(duplicate.AnatomyManager.TryGetPart("vessel", out var copiedVessel), Is.True);
+            Assert.That(copiedVessel.Opacity, Is.EqualTo(0.65f));
+
+            Object.DestroyImmediate(source.gameObject);
+            Object.DestroyImmediate(duplicate.gameObject);
+        }
+
+        [Test]
+        public void ActiveLiverModelRendersModelSelectionOutline()
+        {
+            var root = new GameObject("liver root");
+            var visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            visual.transform.SetParent(root.transform, false);
+            var liverRoot = root.AddComponent<LiverModelRoot>();
+            liverRoot.Initialize(1, "Normal Liver 1");
+
+            liverRoot.SetActiveVisual(true);
+
+            var outline = root.GetComponentsInChildren<Renderer>(true);
+            Assert.That(System.Array.Exists(outline, renderer => renderer.gameObject.name == "Model Selection Outline" && renderer.enabled), Is.True);
+
+            Object.DestroyImmediate(root);
+        }
+
+        [Test]
         public void AnatomyManagerSelectionReplacesPreviousSelection()
         {
             var managerObject = new GameObject("manager");
@@ -638,6 +678,16 @@ namespace LiverAR.Tests.EditMode
             var part = root.AddComponent<AnatomyPart>();
             part.Configure(id, displayName, category, Color.white, new[] { renderer });
             return part;
+        }
+
+        static LiverModelRoot CreateLiverRootWithParts(string name)
+        {
+            var root = new GameObject(name);
+            CreatePart("segment-1", "Segment I").transform.SetParent(root.transform, false);
+            CreatePart("vessel", "Blood Vessel", AnatomyCategory.Vessel).transform.SetParent(root.transform, false);
+            var liverRoot = root.AddComponent<LiverModelRoot>();
+            liverRoot.Initialize(1, name);
+            return liverRoot;
         }
 
         static ModelInteractionController CreateModelInteractionController(Transform modelRoot)

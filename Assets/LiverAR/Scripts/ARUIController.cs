@@ -84,8 +84,7 @@ namespace LiverAR.Runtime
             if (backgroundController != null)
                 backgroundController.StatusMessageChanged += OnBackgroundStatusMessageChanged;
 
-            if (selectedOpacitySlider != null)
-                selectedOpacitySlider.onValueChanged.AddListener(OnTransparencyChanged);
+            BindSelectedOpacitySlider();
 
             settings = LiverARSettings.Load();
             BindSettingsControls();
@@ -341,6 +340,13 @@ namespace LiverAR.Runtime
 
         void OnTransparencyChanged(float value)
         {
+            var manager = CurrentAnatomyManager;
+            if (manager != null && manager.SelectedPart != null)
+            {
+                manager.SelectedPart.SetOpacity(value);
+                return;
+            }
+
             transparencyController?.SetSelectedOpacity(value);
         }
 
@@ -875,8 +881,23 @@ namespace LiverAR.Runtime
                 selectedOpacitySlider = CreateRuntimeSlider(transparencyPanel.transform, "Selected Opacity", new Vector2(0.08f, 0.43f), new Vector2(0.84f, 0.15f), 0f, 1f, 1f);
             }
 
+            if (selectedOpacitySlider == null && transparencyPanel != null)
+                selectedOpacitySlider = transparencyPanel.GetComponentInChildren<Slider>(true);
+            if (selectedOpacitySlider == null && transparencyPanel != null)
+                selectedOpacitySlider = CreateRuntimeSlider(transparencyPanel.transform, "Selected Opacity", new Vector2(0.08f, 0.43f), new Vector2(0.84f, 0.15f), 0f, 1f, 1f);
+            BindSelectedOpacitySlider();
+
             EnsurePanelButton(transparencyPanel, "Reset", new Vector2(0.08f, 0.10f), new Vector2(0.36f, 0.18f), ResetSelectedTransparency);
             EnsurePanelButton(transparencyPanel, "Close", new Vector2(0.56f, 0.10f), new Vector2(0.36f, 0.18f), () => SetPanelActive(transparencyPanel, null));
+        }
+
+        void BindSelectedOpacitySlider()
+        {
+            if (selectedOpacitySlider == null)
+                return;
+
+            selectedOpacitySlider.onValueChanged.RemoveListener(OnTransparencyChanged);
+            selectedOpacitySlider.onValueChanged.AddListener(OnTransparencyChanged);
         }
 
         GameObject FindDirectChild(string childName)
