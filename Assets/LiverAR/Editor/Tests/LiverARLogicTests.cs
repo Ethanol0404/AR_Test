@@ -254,7 +254,7 @@ namespace LiverAR.Tests.EditMode
         }
 
         [Test]
-        public void ActiveLiverModelRendersModelSelectionOutline()
+        public void ActiveLiverModelRendersModelSelectionBoundary()
         {
             var root = new GameObject("liver root");
             var visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -264,8 +264,10 @@ namespace LiverAR.Tests.EditMode
 
             liverRoot.SetActiveVisual(true);
 
-            var outline = root.GetComponentsInChildren<Renderer>(true);
-            Assert.That(System.Array.Exists(outline, renderer => renderer.gameObject.name == "Model Selection Outline" && renderer.enabled), Is.True);
+            var boundary = root.GetComponentInChildren<LineRenderer>(true);
+            Assert.That(boundary, Is.Not.Null);
+            Assert.That(boundary.gameObject.name, Is.EqualTo("Model Selection Boundary"));
+            Assert.That(boundary.enabled, Is.True);
 
             Object.DestroyImmediate(root);
         }
