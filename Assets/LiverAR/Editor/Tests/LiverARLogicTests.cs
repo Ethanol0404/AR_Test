@@ -195,6 +195,24 @@ namespace LiverAR.Tests.EditMode
         }
 
         [Test]
+        public void ZeroOpacityHidesAnatomyPartButKeepsItsOpacityState()
+        {
+            var root = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            var renderer = root.GetComponent<Renderer>();
+            var collider = root.GetComponent<Collider>();
+            var part = root.AddComponent<AnatomyPart>();
+            part.Configure("segment-2", "Segment II", AnatomyCategory.LiverSegment, Color.green, new[] { renderer });
+
+            part.SetOpacity(0f);
+
+            Assert.That(part.Opacity, Is.EqualTo(0f));
+            Assert.That(renderer.enabled, Is.False);
+            Assert.That(collider.enabled, Is.False);
+
+            Object.DestroyImmediate(root);
+        }
+
+        [Test]
         public void AnatomyManagerSelectionReplacesPreviousSelection()
         {
             var managerObject = new GameObject("manager");

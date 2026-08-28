@@ -71,17 +71,25 @@ namespace LiverAR.Runtime
         public void SetVisible(bool visible)
         {
             isVisible = visible;
+            ApplyRendererVisibility();
+        }
+
+        void ApplyRendererVisibility()
+        {
+            var renderVisible = isVisible && opacity > 0.001f;
             foreach (var partRenderer in renderers)
             {
                 if (partRenderer != null)
-                    partRenderer.enabled = visible;
+                    partRenderer.enabled = renderVisible;
             }
 
             foreach (var partCollider in colliders)
             {
                 if (partCollider != null)
-                    partCollider.enabled = visible;
+                    partCollider.enabled = renderVisible;
             }
+
+            UpdateSelectionOutline();
         }
 
         public void SetSelected(bool selected)
@@ -89,7 +97,7 @@ namespace LiverAR.Runtime
             isSelected = selected;
             if (selectionOutline == null)
                 selectionOutline = GetComponent<AnatomySelectionOutline>() ?? gameObject.AddComponent<AnatomySelectionOutline>();
-            selectionOutline.SetVisible(selected);
+            UpdateSelectionOutline();
             ApplyAppearance();
         }
 
@@ -103,12 +111,14 @@ namespace LiverAR.Runtime
         {
             opacity = TransparencyController.ClampOpacity(value);
             ApplyAppearance();
+            ApplyRendererVisibility();
         }
 
         public void ResetOpacity()
         {
             opacity = 1f;
             ApplyAppearance();
+            ApplyRendererVisibility();
         }
 
         public void ResetAppearance()
@@ -146,6 +156,12 @@ namespace LiverAR.Runtime
                 partRenderer.SetPropertyBlock(propertyBlock);
                 ConfigureMaterialTransparency(partRenderer, opacity);
             }
+        }
+
+        void UpdateSelectionOutline()
+        {
+            if (selectionOutline != null)
+                selectionOutline.SetVisible(isSelected && isVisible && opacity > 0.001f);
         }
 
         void ConfigureMaterialTransparency(Renderer partRenderer, float alpha)
