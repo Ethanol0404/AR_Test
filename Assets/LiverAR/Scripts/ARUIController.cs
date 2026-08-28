@@ -46,6 +46,12 @@ namespace LiverAR.Runtime
         [SerializeField] ARBackgroundController backgroundController;
         [SerializeField] LiverModelWorkspace modelWorkspace;
         GameObject modelMenuPanel;
+        AnatomyManager activeAnatomyManager;
+
+        AnatomyManager CurrentAnatomyManager =>
+            modelWorkspace != null && modelWorkspace.ActiveModel != null && modelWorkspace.ActiveModel.AnatomyManager != null
+                ? modelWorkspace.ActiveModel.AnatomyManager
+                : activeAnatomyManager != null ? activeAnatomyManager : anatomyManager;
 
         LiverARSettings settings;
         GraphicRaycaster graphicRaycaster;
@@ -170,6 +176,7 @@ namespace LiverAR.Runtime
         public void OpenModelMenu()
         {
             EnsureModelMenu();
+            RebuildModelRows();
             SetNavigationPanel(modelMenuPanel);
         }
         public void OpenSegmentationMenu()
@@ -179,7 +186,7 @@ namespace LiverAR.Runtime
         }
         public void OpenCouinaudSegmentsPanel()
         {
-            anatomyManager?.ShowLiverSegments();
+            CurrentAnatomyManager?.ShowLiverSegments();
             RebuildSegmentToggles();
             SetNavigationPanel(couinaudSegmentsPanel);
         }
@@ -199,12 +206,12 @@ namespace LiverAR.Runtime
         public void OpenTransparencyPanelForSelection()
         {
             EnsureDetailPanels();
-            OnSelectionChanged(anatomyManager != null ? anatomyManager.SelectedPart : null);
+            OnSelectionChanged(CurrentAnatomyManager != null ? CurrentAnatomyManager.SelectedPart : null);
             SetPanelActive(transparencyPanel, transparencyPanel);
         }
         public void ToggleTransparencyPanelForSelection()
         {
-            OnSelectionChanged(anatomyManager != null ? anatomyManager.SelectedPart : null);
+            OnSelectionChanged(CurrentAnatomyManager != null ? CurrentAnatomyManager.SelectedPart : null);
             SetPanelActive(transparencyPanel, transparencyPanel != null && transparencyPanel.activeSelf ? null : transparencyPanel);
         }
         public void OpenSettingsPanel() => SetNavigationPanel(settingsPanel);
@@ -222,12 +229,14 @@ namespace LiverAR.Runtime
             }
             if (modelWorkspace != null && modelWorkspace.Models.Count > 0)
             {
-                modelWorkspace.Activate(modelWorkspace.Models[0]);
+                var root = modelWorkspace.Models[0];
+                modelWorkspace.Activate(root);
+                activeAnatomyManager = root.AnatomyManager;
                 return;
             }
             if (placementController != null && placementController.SwitchModel(LiverModelType.Normal))
             {
-                anatomyManager?.ClearSelection();
+                CurrentAnatomyManager?.ClearSelection();
                 SetModelMessage(string.Empty);
                 return;
             }
@@ -236,15 +245,30 @@ namespace LiverAR.Runtime
                 SetModelMessage(string.Empty);
         }
 
-        public void DuplicateActiveModel() => modelWorkspace?.DuplicateActive();
-        public void DeleteActiveModel() => modelWorkspace?.DeleteActive();
+        public void CreateNewModel()
+        {
+            placementController?.PlaceLiver();
+            OpenModelMenu();
+        }
+
+        public void DuplicateActiveModel()
+        {
+            if (modelWorkspace?.DuplicateActive() != null)
+                OpenModelMenu();
+        }
+
+        public void DeleteActiveModel()
+        {
+            if (modelWorkspace != null && modelWorkspace.DeleteActive())
+                OpenModelMenu();
+        }
         public void CancelModelAction() => ClosePanels();
 
         public void SelectDiseaseModel()
         {
             if (placementController != null && placementController.SwitchModel(LiverModelType.Disease))
             {
-                anatomyManager?.ClearSelection();
+                CurrentAnatomyManager?.ClearSelection();
                 SetModelMessage(string.Empty);
                 return;
             }
@@ -255,34 +279,34 @@ namespace LiverAR.Runtime
 
         public void ShowSegments()
         {
-            anatomyManager?.ShowLiverSegments();
+            CurrentAnatomyManager?.ShowLiverSegments();
             RebuildSegmentToggles();
         }
         public void ShowVessels() => ShowCategory(AnatomyCategory.Vessel);
         public void ShowAllSegments()
         {
-            anatomyManager?.ShowLiverSegments();
+            CurrentAnatomyManager?.ShowLiverSegments();
             SetTogglesOn(segmentToggles, true);
         }
 
-        public void HideAllSegments() => SetCategoryVisible(AnatomyCategory.LiverSegment, false, segmentToggles);
-        public void ShowAllVessels() => SetCategoryVisible(AnatomyCategory.Vessel, true, vesselToggles);
-        public void HideAllVessels() => SetCategoryVisible(AnatomyCategory.Vessel, false, vesselToggles);
+        public void HideAllSegments() => SetCategoryVisible(CurrentAnatomyManager, AnatomyCategory.LiverSegment, false, segmentToggles);
+        public void ShowAllVessels() => SetCategoryVisible(CurrentAnatomyManager, AnatomyCategory.Vessel, true, vesselToggles);
+        public void HideAllVessels() => SetCategoryVisible(CurrentAnatomyManager, AnatomyCategory.Vessel, false, vesselToggles);
 
         public void IsolateSelected()
         {
-            if (anatomyManager == null || anatomyManager.SelectedPart == null)
+            if (CurrentAnatomyManager == null || CurrentAnatomyManager.SelectedPart == null)
                 return;
 
-            var selected = anatomyManager.SelectedPart;
-            foreach (var part in anatomyManager.Parts)
+            var selected = CurrentAnatomyManager.SelectedPart;
+            foreach (var part in CurrentAnatomyManager.Parts)
                 part.SetVisible(part == selected);
         }
 
-        public void ShowAll() => anatomyManager?.ShowAll();
+        public void ShowAll() => CurrentAnatomyManager?.ShowAll();
         public void HideAll()
         {
-            anatomyManager?.HideAll();
+            CurrentAnatomyManager?.HideAll();
             foreach (var toggle in segmentToggles)
             {
                 toggle.SetIsOnWithoutNotify(false);
@@ -291,7 +315,7 @@ namespace LiverAR.Runtime
         }
         public void ResetAppearance()
         {
-            anatomyManager?.ResetAllAppearances();
+            CurrentAnatomyManager?.ResetAllAppearances();
             foreach (var toggle in segmentToggles)
             {
                 toggle.SetIsOnWithoutNotify(true);
@@ -300,9 +324,15 @@ namespace LiverAR.Runtime
         }
         public void ResetModelTransform() => modelInteractionController?.ResetTransform();
         public void ResetARSession() => sessionResetController?.ResetSession();
-        public void ClearSelection() => anatomyManager?.ClearSelection();
-        public void ShowSelected() => anatomyManager?.SelectedPart?.SetVisible(true);
-        public void HideSelected() => anatomyManager?.SelectedPart?.SetVisible(false);
+        public void ClearSelection() => CurrentAnatomyManager?.ClearSelection();
+        public void ShowSelected() => CurrentAnatomyManager?.SelectedPart?.SetVisible(true);
+        public void HideSelected() => CurrentAnatomyManager?.SelectedPart?.SetVisible(false);
+
+        public void SetActiveSelection(AnatomyManager manager, AnatomyPart part)
+        {
+            activeAnatomyManager = manager;
+            OnSelectionChanged(part);
+        }
 
         public void SetSelectedColor(Color color)
         {
@@ -318,7 +348,7 @@ namespace LiverAR.Runtime
         {
             if (transparencyController != null && transparencyController.ResetSelectedOpacity())
             {
-                var selected = anatomyManager != null ? anatomyManager.SelectedPart : null;
+                var selected = CurrentAnatomyManager != null ? CurrentAnatomyManager.SelectedPart : null;
                 if (selectedOpacitySlider != null && selected != null)
                     selectedOpacitySlider.SetValueWithoutNotify(selected.Opacity);
             }
@@ -362,10 +392,10 @@ namespace LiverAR.Runtime
 
         bool HasAnatomyPart(AnatomyCategory category)
         {
-            if (anatomyManager == null)
+            if (CurrentAnatomyManager == null)
                 return false;
 
-            foreach (var part in anatomyManager.Parts)
+            foreach (var part in CurrentAnatomyManager.Parts)
             {
                 if (part != null && part.Category == category)
                     return true;
@@ -376,20 +406,20 @@ namespace LiverAR.Runtime
 
         void ShowCategory(AnatomyCategory category)
         {
-            if (anatomyManager == null)
+            if (CurrentAnatomyManager == null)
                 return;
 
-            foreach (var part in anatomyManager.Parts)
+            foreach (var part in CurrentAnatomyManager.Parts)
                 part.SetVisible(part.Category == category);
-            anatomyManager.ClearSelection();
+            CurrentAnatomyManager.ClearSelection();
         }
 
         void ShowVesselsWithoutChangingLiverState()
         {
-            if (anatomyManager == null)
+            if (CurrentAnatomyManager == null)
                 return;
 
-            foreach (var part in anatomyManager.Parts)
+            foreach (var part in CurrentAnatomyManager.Parts)
             {
                 if (part != null && part.Category == AnatomyCategory.Vessel)
                     part.SetVisible(true);
@@ -409,11 +439,56 @@ namespace LiverAR.Runtime
         void EnsureModelMenu()
         {
             if (modelMenuPanel != null) return;
-            modelMenuPanel = CreateRuntimePanel(transform, "Model Menu", new Vector2(0.58f, 0.35f), new Vector2(0.36f, 0.38f));
-            CreateRuntimeButton(modelMenuPanel.transform, "Normal Liver", new Vector2(.08f,.74f), new Vector2(.84f,.16f), SelectNormalModel);
-            CreateRuntimeButton(modelMenuPanel.transform, "Duplicate", new Vector2(.08f,.54f), new Vector2(.84f,.16f), DuplicateActiveModel);
-            CreateRuntimeButton(modelMenuPanel.transform, "Delete", new Vector2(.08f,.34f), new Vector2(.84f,.16f), DeleteActiveModel);
-            CreateRuntimeButton(modelMenuPanel.transform, "Cancel", new Vector2(.08f,.14f), new Vector2(.84f,.16f), CancelModelAction);
+            modelMenuPanel = CreateRuntimePanel(transform, "Model Menu", new Vector2(0.58f, 0.28f), new Vector2(0.36f, 0.54f));
+        }
+
+        void RebuildModelRows()
+        {
+            if (modelMenuPanel == null) return;
+            var old = modelMenuPanel.transform.Find("Model Rows");
+            if (old != null)
+            {
+                old.gameObject.SetActive(false);
+                Destroy(old.gameObject);
+            }
+            old = modelMenuPanel.transform.Find("Model Actions");
+            if (old != null)
+            {
+                old.gameObject.SetActive(false);
+                Destroy(old.gameObject);
+            }
+            var rows = new GameObject("Model Rows", typeof(RectTransform)); rows.transform.SetParent(modelMenuPanel.transform, false);
+            var rowsRect = rows.GetComponent<RectTransform>(); rowsRect.anchorMin = Vector2.zero; rowsRect.anchorMax = Vector2.one; rowsRect.offsetMin = Vector2.zero; rowsRect.offsetMax = Vector2.zero;
+            var roots = modelWorkspace != null ? modelWorkspace.Models : null;
+            var count = roots != null ? roots.Count : 0;
+            if (count == 0)
+                CreateRuntimeButton(rows.transform, "Place Liver", new Vector2(.08f,.72f), new Vector2(.84f,.14f), SelectNormalModel);
+            else
+                for (var i = 0; i < count && i < 5; i++)
+                {
+                    var root = roots[i]; var y = .64f - i * .14f;
+                    if (root == null) continue;
+                    CreateRuntimeButton(rows.transform, root.DisplayName, new Vector2(.08f,y), new Vector2(.84f,.12f), () =>
+                    {
+                        modelWorkspace.Activate(root);
+                        activeAnatomyManager = root.AnatomyManager;
+                        OpenModelActions();
+                    });
+                }
+            CreateRuntimeButton(rows.transform, "New Model", new Vector2(.08f,.18f), new Vector2(.40f,.12f), CreateNewModel);
+            CreateRuntimeButton(rows.transform, "Close", new Vector2(.52f,.18f), new Vector2(.40f,.12f), CancelModelAction);
+        }
+
+        void OpenModelActions()
+        {
+            var old = modelMenuPanel.transform.Find("Model Actions"); if (old != null) Destroy(old.gameObject);
+            var rows = modelMenuPanel.transform.Find("Model Rows");
+            if (rows != null) rows.gameObject.SetActive(false);
+            var actions = new GameObject("Model Actions", typeof(RectTransform)); actions.transform.SetParent(modelMenuPanel.transform, false);
+            var actionsRect = actions.GetComponent<RectTransform>(); actionsRect.anchorMin = Vector2.zero; actionsRect.anchorMax = Vector2.one; actionsRect.offsetMin = Vector2.zero; actionsRect.offsetMax = Vector2.zero;
+            CreateRuntimeButton(actions.transform, "Duplicate", new Vector2(.08f,.52f), new Vector2(.84f,.14f), DuplicateActiveModel);
+            CreateRuntimeButton(actions.transform, "Delete", new Vector2(.08f,.34f), new Vector2(.84f,.14f), DeleteActiveModel);
+            CreateRuntimeButton(actions.transform, "Back", new Vector2(.08f,.16f), new Vector2(.84f,.14f), OpenModelMenu);
         }
 
         static void SetPanelActive(GameObject panel, GameObject activePanel)
@@ -1016,7 +1091,8 @@ namespace LiverAR.Runtime
 
         void RebuildAnatomyToggles(GameObject panel, string containerName, AnatomyCategory category, List<Toggle> toggles, System.Func<AnatomyPart, int, string> labelFactory)
         {
-            if (panel == null || anatomyManager == null)
+            var manager = CurrentAnatomyManager;
+            if (panel == null || manager == null)
                 return;
 
             var existingContainer = panel.transform.Find(containerName);
@@ -1025,7 +1101,7 @@ namespace LiverAR.Runtime
 
             toggles.Clear();
             var anatomyParts = new List<AnatomyPart>();
-            foreach (var part in anatomyManager.Parts)
+            foreach (var part in manager.Parts)
             {
                 if (part != null && part.Category == category)
                     anatomyParts.Add(part);
@@ -1052,19 +1128,19 @@ namespace LiverAR.Runtime
                 toggle.onValueChanged.AddListener(isOn =>
                 {
                     part.SetVisible(isOn);
-                    if (!isOn && anatomyManager.SelectedPart == part)
-                        anatomyManager.ClearSelection();
+                    if (!isOn && manager.SelectedPart == part)
+                        manager.ClearSelection();
                     UpdateToggleStatusText(toggle);
                 });
                 toggles.Add(toggle);
             }
         }
 
-        void SetCategoryVisible(AnatomyCategory category, bool visible, List<Toggle> toggles)
+        void SetCategoryVisible(AnatomyManager manager, AnatomyCategory category, bool visible, List<Toggle> toggles)
         {
-            if (anatomyManager != null)
+            if (manager != null)
             {
-                foreach (var part in anatomyManager.Parts)
+                foreach (var part in manager.Parts)
                 {
                     if (part != null && part.Category == category)
                         part.SetVisible(visible);

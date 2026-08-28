@@ -9,6 +9,7 @@ namespace LiverAR.Runtime
         [SerializeField] AnatomyManager anatomyManager;
         [SerializeField] ARUIController uiController;
         [SerializeField] ModelInteractionController modelInteractionController;
+        [SerializeField] LiverModelWorkspace modelWorkspace;
         [SerializeField] LayerMask selectionMask = ~0;
         [SerializeField] float dragThresholdPixels = 12f;
         [SerializeField] float longPressSeconds = 1f;
@@ -35,6 +36,8 @@ namespace LiverAR.Runtime
                 uiController = ui;
             if (modelInteractionController == null)
                 modelInteractionController = modelInteraction;
+            if (modelWorkspace == null)
+                modelWorkspace = FindAnyObjectByType<LiverModelWorkspace>();
         }
 
         void OnEnable()
@@ -92,10 +95,15 @@ namespace LiverAR.Runtime
 
         void BeginTouch(TouchInput.PointerInput pointer)
         {
+            if (modelWorkspace == null)
+                modelWorkspace = FindAnyObjectByType<LiverModelWorkspace>();
             activePointerId = pointer.PointerId;
             startPosition = pointer.ScreenPosition;
             startTime = Time.unscaledTime;
             startedPart = RaycastPart(pointer.ScreenPosition);
+            var root = startedPart != null ? startedPart.GetComponentInParent<LiverModelRoot>() : null;
+            if (root != null)
+                modelWorkspace?.Activate(root);
             state = startedPart != null ? AnatomyGestureState.LongPressPending : AnatomyGestureState.PossibleTap;
         }
 
@@ -123,7 +131,10 @@ namespace LiverAR.Runtime
             if (classifiedState != AnatomyGestureState.LongPressTriggered)
                 return;
 
-            anatomyManager?.Select(startedPart);
+            var root = startedPart != null ? startedPart.GetComponentInParent<LiverModelRoot>() : null;
+            var manager = root != null ? root.AnatomyManager : anatomyManager;
+            manager?.Select(startedPart);
+            uiController?.SetActiveSelection(manager, startedPart);
             LongPressedPart?.Invoke(startedPart, startPosition);
             uiController?.OpenTransparencyPanelForSelection();
             state = AnatomyGestureState.LongPressTriggered;
@@ -136,7 +147,11 @@ namespace LiverAR.Runtime
                 var selectedPart = RaycastPart(pointer.ScreenPosition);
                 if (selectedPart != null)
                 {
-                    anatomyManager?.Select(selectedPart);
+                    var root = selectedPart.GetComponentInParent<LiverModelRoot>();
+                    if (root != null) modelWorkspace?.Activate(root);
+                    var manager = root != null ? root.AnatomyManager : anatomyManager;
+                    manager?.Select(selectedPart);
+                    uiController?.SetActiveSelection(manager, selectedPart);
                     if (IsDoubleTap(selectedPart))
                         uiController?.OpenInformationPanelForSelection();
                     else
@@ -148,6 +163,7 @@ namespace LiverAR.Runtime
                 else
                 {
                     anatomyManager?.ClearSelection();
+                    uiController?.SetActiveSelection(anatomyManager, null);
                     uiController?.CloseDetailOverlays();
                 }
             }
