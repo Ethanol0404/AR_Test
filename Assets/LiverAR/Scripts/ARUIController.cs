@@ -44,6 +44,8 @@ namespace LiverAR.Runtime
         [SerializeField] ARPlacementController placementController;
         [SerializeField] LiverModelSwitcher modelSwitcher;
         [SerializeField] ARBackgroundController backgroundController;
+        [SerializeField] LiverModelWorkspace modelWorkspace;
+        GameObject modelMenuPanel;
 
         LiverARSettings settings;
         GraphicRaycaster graphicRaycaster;
@@ -165,6 +167,11 @@ namespace LiverAR.Runtime
 
         public void UseVirtualSurface() => placementController?.UseVirtualSurface();
         public void ToggleMenu() => SetNavigationPanel(compactMenuPanel != null && compactMenuPanel.activeSelf ? null : compactMenuPanel);
+        public void OpenModelMenu()
+        {
+            EnsureModelMenu();
+            SetNavigationPanel(modelMenuPanel);
+        }
         public void OpenSegmentationMenu()
         {
             UpdateVesselOptionVisibility();
@@ -183,10 +190,15 @@ namespace LiverAR.Runtime
             RebuildVesselToggles();
             SetNavigationPanel(vesselPanel);
         }
-        public void OpenInformationPanelForSelection() => SetPanelActive(informationPanel, informationPanel);
+        public void OpenInformationPanelForSelection()
+        {
+            EnsureDetailPanels();
+            SetPanelActive(informationPanel, informationPanel);
+        }
         public void CloseInformationPanel() => SetPanelActive(informationPanel, null);
         public void OpenTransparencyPanelForSelection()
         {
+            EnsureDetailPanels();
             OnSelectionChanged(anatomyManager != null ? anatomyManager.SelectedPart : null);
             SetPanelActive(transparencyPanel, transparencyPanel);
         }
@@ -201,6 +213,18 @@ namespace LiverAR.Runtime
 
         public void SelectNormalModel()
         {
+            if (modelWorkspace == null)
+                modelWorkspace = FindAnyObjectByType<LiverModelWorkspace>();
+            if (modelWorkspace != null && modelWorkspace.ActiveModel == null)
+            {
+                placementController?.PlaceLiver();
+                return;
+            }
+            if (modelWorkspace != null && modelWorkspace.Models.Count > 0)
+            {
+                modelWorkspace.Activate(modelWorkspace.Models[0]);
+                return;
+            }
             if (placementController != null && placementController.SwitchModel(LiverModelType.Normal))
             {
                 anatomyManager?.ClearSelection();
@@ -211,6 +235,10 @@ namespace LiverAR.Runtime
             if (modelSwitcher != null && modelSwitcher.SwitchTo(LiverModelType.Normal))
                 SetModelMessage(string.Empty);
         }
+
+        public void DuplicateActiveModel() => modelWorkspace?.DuplicateActive();
+        public void DeleteActiveModel() => modelWorkspace?.DeleteActive();
+        public void CancelModelAction() => ClosePanels();
 
         public void SelectDiseaseModel()
         {
@@ -375,12 +403,27 @@ namespace LiverAR.Runtime
             SetPanelActive(couinaudSegmentsPanel, activePanel);
             SetPanelActive(vesselPanel, activePanel);
             SetPanelActive(settingsPanel, activePanel);
+            SetPanelActive(modelMenuPanel, activePanel);
+        }
+
+        void EnsureModelMenu()
+        {
+            if (modelMenuPanel != null) return;
+            modelMenuPanel = CreateRuntimePanel(transform, "Model Menu", new Vector2(0.58f, 0.35f), new Vector2(0.36f, 0.38f));
+            CreateRuntimeButton(modelMenuPanel.transform, "Normal Liver", new Vector2(.08f,.74f), new Vector2(.84f,.16f), SelectNormalModel);
+            CreateRuntimeButton(modelMenuPanel.transform, "Duplicate", new Vector2(.08f,.54f), new Vector2(.84f,.16f), DuplicateActiveModel);
+            CreateRuntimeButton(modelMenuPanel.transform, "Delete", new Vector2(.08f,.34f), new Vector2(.84f,.16f), DeleteActiveModel);
+            CreateRuntimeButton(modelMenuPanel.transform, "Cancel", new Vector2(.08f,.14f), new Vector2(.84f,.16f), CancelModelAction);
         }
 
         static void SetPanelActive(GameObject panel, GameObject activePanel)
         {
             if (panel != null)
+            {
                 panel.SetActive(panel == activePanel);
+                if (panel == activePanel)
+                    panel.transform.SetAsLastSibling();
+            }
         }
 
         void UpdateInformationPanel(AnatomyPart part)
@@ -641,7 +684,7 @@ namespace LiverAR.Runtime
 
             if (compactMenuPanel != null)
             {
-                EnsurePanelButton(compactMenuPanel, "Model", new Vector2(0.08f, 0.76f), new Vector2(0.84f, 0.16f), SelectNormalModel);
+                EnsurePanelButton(compactMenuPanel, "Model", new Vector2(0.08f, 0.76f), new Vector2(0.84f, 0.16f), OpenModelMenu);
                 EnsurePanelButton(compactMenuPanel, "Segmentation", new Vector2(0.08f, 0.58f), new Vector2(0.84f, 0.16f), OpenSegmentationMenu);
                 EnsurePanelButton(compactMenuPanel, "Settings", new Vector2(0.08f, 0.40f), new Vector2(0.84f, 0.16f), OpenSettingsPanel);
                 EnsurePanelButton(compactMenuPanel, "Reset Placement", new Vector2(0.08f, 0.22f), new Vector2(0.84f, 0.16f), ResetPlacement);
@@ -682,15 +725,38 @@ namespace LiverAR.Runtime
             }
             else
             {
-                SetAnchors(transparencyPanel.GetComponent<RectTransform>(), new Vector2(0.34f, 0.37f), new Vector2(0.34f, 0.14f));
+                SetAnchors(transparencyPanel.GetComponent<RectTransform>(), new Vector2(0.34f, 0.34f), new Vector2(0.34f, 0.22f));
                 if (transparencyTitleText != null)
-                    SetTextAnchors(transparencyTitleText, new Vector2(0.05f, 0.58f), new Vector2(0.95f, 0.94f));
+                    SetTextAnchors(transparencyTitleText, new Vector2(0.05f, 0.70f), new Vector2(0.95f, 0.94f));
                 if (selectedOpacitySlider != null)
-                    SetAnchors(selectedOpacitySlider.GetComponent<RectTransform>(), new Vector2(0.08f, 0.20f), new Vector2(0.84f, 0.22f));
-                HidePanelChild(transparencyPanel, "Reset Button");
-                HidePanelChild(transparencyPanel, "Close Button");
-                HidePanelChild(transparencyPanel, "Transparency Label");
+                    SetAnchors(selectedOpacitySlider.GetComponent<RectTransform>(), new Vector2(0.08f, 0.43f), new Vector2(0.84f, 0.15f));
             }
+
+            EnsureDetailPanels();
+        }
+
+        void EnsureDetailPanels()
+        {
+            var root = transform;
+            if (informationPanel == null)
+            {
+                informationPanel = CreateRuntimePanel(root, "Information Panel", new Vector2(0.55f, 0.16f), new Vector2(0.40f, 0.30f));
+                informationBodyText = CreateRuntimeText(informationPanel.transform, "Information Body", "Select an anatomical structure to view details.", 15, TextAnchor.UpperLeft, new Vector2(0.06f, 0.24f), new Vector2(0.94f, 0.94f));
+            }
+
+            if (informationBodyText == null && informationPanel != null)
+                informationBodyText = informationPanel.GetComponentInChildren<Text>(true);
+            EnsurePanelButton(informationPanel, "Close", new Vector2(0.32f, 0.05f), new Vector2(0.36f, 0.14f), CloseInformationPanel);
+
+            if (transparencyPanel == null)
+            {
+                transparencyPanel = CreateRuntimePanel(root, "Transparency Panel", new Vector2(0.34f, 0.34f), new Vector2(0.34f, 0.22f));
+                transparencyTitleText = CreateRuntimeText(transparencyPanel.transform, "Transparency Title", "Opacity: no selection", 14, TextAnchor.MiddleCenter, new Vector2(0.05f, 0.70f), new Vector2(0.95f, 0.94f));
+                selectedOpacitySlider = CreateRuntimeSlider(transparencyPanel.transform, "Selected Opacity", new Vector2(0.08f, 0.43f), new Vector2(0.84f, 0.15f), 0f, 1f, 1f);
+            }
+
+            EnsurePanelButton(transparencyPanel, "Reset", new Vector2(0.08f, 0.10f), new Vector2(0.36f, 0.18f), ResetSelectedTransparency);
+            EnsurePanelButton(transparencyPanel, "Close", new Vector2(0.56f, 0.10f), new Vector2(0.36f, 0.18f), () => SetPanelActive(transparencyPanel, null));
         }
 
         GameObject FindDirectChild(string childName)
@@ -766,7 +832,7 @@ namespace LiverAR.Runtime
             BindButton("Reset Settings Button", ResetSettings);
             BindButton("Reset Segments Button", ResetAppearance);
 
-            BindPanelButton(compactMenuPanel, "Model Button", SelectNormalModel);
+            BindPanelButton(compactMenuPanel, "Model Button", OpenModelMenu);
             BindPanelButton(compactMenuPanel, "Segmentation Button", OpenSegmentationMenu);
             BindPanelButton(compactMenuPanel, "Settings Button", OpenSettingsPanel);
             BindPanelButton(compactMenuPanel, "Reset Placement Button", ResetPlacement);
@@ -1201,6 +1267,8 @@ namespace LiverAR.Runtime
         {
             if (anatomyManager == null)
                 anatomyManager = FindAnyObjectByType<AnatomyManager>();
+            if (modelWorkspace == null)
+                modelWorkspace = FindAnyObjectByType<LiverModelWorkspace>();
             if (transparencyController == null)
                 transparencyController = FindAnyObjectByType<TransparencyController>();
             if (modelInteractionController == null)

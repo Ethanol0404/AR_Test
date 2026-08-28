@@ -152,7 +152,7 @@ namespace LiverAR.Runtime
                 if (material == null)
                     continue;
 
-                if (material.shader == null)
+                if (material.shader == null || material.shader.name == "Hidden/InternalErrorShader")
                 {
                     var fallbackShader = Shader.Find("Universal Render Pipeline/Lit");
                     if (fallbackShader == null)

@@ -5,8 +5,12 @@ namespace LiverAR.Editor
 {
     public static class AndroidBuild
     {
+        [MenuItem("Liver AR/Build Android APK")]
         public static void BuildAndRun()
         {
+            LiverARProjectSetup.RepairAnatomyMaterials();
+            LiverARProjectSetup.RebuildAnatomyPrefabFromSourceModels();
+
             var options = new BuildPlayerOptions
             {
                 scenes = new[] { "Assets/Scenes/LiverARScene.unity" },

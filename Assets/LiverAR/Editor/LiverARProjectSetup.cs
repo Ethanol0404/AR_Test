@@ -163,6 +163,21 @@ namespace LiverAR.Editor
             Debug.Log("Rebuilt LiverAnatomyPrototype.prefab from SourceFrom3DSlicer OBJ segment models.");
         }
 
+        [MenuItem("Liver AR/Repair Anatomy Materials")]
+        public static void RepairAnatomyMaterials()
+        {
+            Directory.CreateDirectory(MaterialsPath);
+            foreach (var seed in Seeds)
+            {
+                var material = CreateMaterial(seed);
+                EditorUtility.SetDirty(material);
+            }
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log("Repaired anatomy materials using the active Android-compatible render pipeline shader.");
+        }
+
         [InitializeOnLoadMethod]
         static void QueueOneTimeSourceModelPrefabRebuild()
         {
@@ -307,6 +322,16 @@ namespace LiverAR.Editor
                 renderer.sharedMaterial = CreateMaterial(seed);
             }
 
+            // Colliders on the imported mesh make selection match the anatomy actually touched.
+            foreach (var filter in obj.GetComponentsInChildren<MeshFilter>(true))
+            {
+                if (filter.sharedMesh == null || filter.GetComponent<Collider>() != null)
+                    continue;
+
+                var meshCollider = filter.gameObject.AddComponent<MeshCollider>();
+                meshCollider.sharedMesh = filter.sharedMesh;
+            }
+
             if (obj.GetComponentInChildren<Collider>(true) == null)
                 obj.AddComponent<BoxCollider>();
 
@@ -367,17 +392,23 @@ namespace LiverAR.Editor
         {
             var materialPath = $"{MaterialsPath}/{seed.Id}-material.mat";
             var existing = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
-            var shader = Shader.Find("Universal Render Pipeline/Lit");
-            if (shader == null)
-                shader = Shader.Find("Standard");
+            var shader = FindCompatibleShader();
             var material = existing != null ? existing : new Material(shader);
-            if (material.shader == null && shader != null)
+            if (shader == null)
+                throw new BuildFailedException("No Android-compatible Lit shader was found for the anatomy materials.");
+
+            if (material.shader == null || material.shader.name == "Hidden/InternalErrorShader")
                 material.shader = shader;
             material.name = seed.Id + "-material";
             material.SetColor("_BaseColor", seed.Color);
             if (existing == null)
                 AssetDatabase.CreateAsset(material, materialPath);
             return material;
+        }
+
+        static Shader FindCompatibleShader()
+        {
+            return Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
         }
 
         static Canvas CreateCanvas(out ARUIController ui)
