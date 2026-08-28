@@ -10,7 +10,7 @@ namespace LiverAR.Runtime
         [SerializeField] ARRaycastManager raycastManager;
         [SerializeField] Camera arCamera;
         [SerializeField] float minScale = 0.05f;
-        [SerializeField] float maxScale = 5f;
+        [SerializeField] float maxScale = 10f;
         [SerializeField] float yawDegreesPerPixel = 0.12f;
         [SerializeField] float pitchDegreesPerPixel = 0.10f;
         [SerializeField] float pinchDeadZonePixels = 2f;

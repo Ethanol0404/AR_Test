@@ -254,20 +254,21 @@ namespace LiverAR.Tests.EditMode
         }
 
         [Test]
-        public void ActiveLiverModelRendersModelSelectionBoundary()
+        public void SelectingPartRendersOnlyThatPartsSelectionOutline()
         {
             var root = new GameObject("liver root");
             var visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
             visual.transform.SetParent(root.transform, false);
-            var liverRoot = root.AddComponent<LiverModelRoot>();
-            liverRoot.Initialize(1, "Normal Liver 1");
+            var part = visual.AddComponent<AnatomyPart>();
+            part.Configure("segment-1", "Segment I", AnatomyCategory.LiverSegment, Color.red, new[] { visual.GetComponent<Renderer>() });
+            var manager = root.AddComponent<AnatomyManager>();
+            manager.SetConfiguredParts(new[] { part });
 
-            liverRoot.SetActiveVisual(true);
+            manager.Select(part);
 
-            var boundary = root.GetComponentInChildren<LineRenderer>(true);
-            Assert.That(boundary, Is.Not.Null);
-            Assert.That(boundary.gameObject.name, Is.EqualTo("Model Selection Boundary"));
-            Assert.That(boundary.enabled, Is.True);
+            var outline = System.Array.Find(root.GetComponentsInChildren<MeshRenderer>(true), renderer => renderer.gameObject.name == "Selection Outline");
+            Assert.That(outline, Is.Not.Null);
+            Assert.That(outline.enabled, Is.True);
 
             Object.DestroyImmediate(root);
         }

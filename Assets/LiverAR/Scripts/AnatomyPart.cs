@@ -263,22 +263,47 @@ namespace LiverAR.Runtime
             }
         }
 
-        static Material GetSharedMaterial()
+        Material GetSharedMaterial()
         {
             if (sharedMaterial != null)
                 return sharedMaterial;
 
-            var shader = Shader.Find("Universal Render Pipeline/Unlit");
-            if (shader == null)
-                return null;
-
-            sharedMaterial = new Material(shader)
+            // Clone a material already used by this part. Its shader is therefore
+            // included in the Android build, unlike a shader found only at runtime.
+            foreach (var source in GetComponentsInChildren<MeshFilter>(true))
             {
-                hideFlags = HideFlags.DontSave
-            };
-            sharedMaterial.SetColor("_BaseColor", new Color(1f, 1f, 1f, 0.98f));
-            sharedMaterial.SetFloat("_Cull", (float)UnityEngine.Rendering.CullMode.Front);
-            sharedMaterial.SetFloat("_ZWrite", 0f);
+                if (source.sharedMesh == null || source.transform.name == "Selection Outline")
+                    continue;
+
+                var sourceRenderer = source.GetComponent<MeshRenderer>();
+                if (sourceRenderer == null || sourceRenderer.sharedMaterial == null)
+                    continue;
+
+                sharedMaterial = new Material(sourceRenderer.sharedMaterial)
+                {
+                    hideFlags = HideFlags.DontSave
+                };
+                break;
+            }
+
+            if (sharedMaterial == null)
+            {
+                var shader = Shader.Find("Universal Render Pipeline/Unlit");
+                if (shader == null)
+                    return null;
+
+                sharedMaterial = new Material(shader)
+                {
+                    hideFlags = HideFlags.DontSave
+                };
+            }
+
+            var white = new Color(1f, 1f, 1f, 0.98f);
+            if (sharedMaterial.HasProperty("_BaseColor")) sharedMaterial.SetColor("_BaseColor", white);
+            if (sharedMaterial.HasProperty("_Color")) sharedMaterial.SetColor("_Color", white);
+            if (sharedMaterial.HasProperty("_Surface")) sharedMaterial.SetFloat("_Surface", 0f);
+            if (sharedMaterial.HasProperty("_Cull")) sharedMaterial.SetFloat("_Cull", (float)UnityEngine.Rendering.CullMode.Front);
+            if (sharedMaterial.HasProperty("_ZWrite")) sharedMaterial.SetFloat("_ZWrite", 0f);
             sharedMaterial.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent + 10;
             return sharedMaterial;
         }

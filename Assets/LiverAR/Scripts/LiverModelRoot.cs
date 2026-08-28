@@ -10,7 +10,6 @@ namespace LiverAR.Runtime
         [SerializeField] int instanceId;
         [SerializeField] string displayName;
         [SerializeField] GameObject selectionIndicator;
-        LiverModelSelectionBoundary selectionBoundary;
 
         public AnatomyManager AnatomyManager { get; private set; }
         public int InstanceId => instanceId;
@@ -43,10 +42,6 @@ namespace LiverAR.Runtime
             EnsureIndicator();
             if (selectionIndicator != null)
                 selectionIndicator.SetActive(active);
-
-            if (selectionBoundary == null)
-                selectionBoundary = GetComponent<LiverModelSelectionBoundary>() ?? gameObject.AddComponent<LiverModelSelectionBoundary>();
-            selectionBoundary.SetVisible(active);
         }
 
         public void CopyRuntimeStateFrom(LiverModelRoot source)
@@ -128,139 +123,4 @@ namespace LiverAR.Runtime
         }
     }
 
-    sealed class LiverModelSelectionBoundary : MonoBehaviour
-    {
-        static Material sharedMaterial;
-        LineRenderer line;
-
-        public void SetVisible(bool visible)
-        {
-            EnsureLine();
-            if (line == null)
-                return;
-
-            if (visible)
-                UpdateBounds();
-            line.enabled = visible;
-        }
-
-        void EnsureLine()
-        {
-            if (line != null)
-                return;
-
-            var material = GetSharedMaterial();
-            if (material == null)
-                return;
-
-            var boundary = new GameObject("Model Selection Boundary");
-            boundary.transform.SetParent(transform, false);
-            line = boundary.AddComponent<LineRenderer>();
-            line.sharedMaterial = material;
-            line.useWorldSpace = false;
-            line.loop = false;
-            line.positionCount = 16;
-            line.numCornerVertices = 2;
-            line.numCapVertices = 2;
-            line.alignment = LineAlignment.View;
-            line.enabled = false;
-        }
-
-        void UpdateBounds()
-        {
-            if (!TryGetVisibleBounds(out var worldBounds))
-            {
-                line.enabled = false;
-                return;
-            }
-
-            var center = transform.InverseTransformPoint(worldBounds.center);
-            var size = Vector3.Scale(worldBounds.size, InverseLossyScale(transform.lossyScale));
-            var half = size * .5f;
-            var min = center - half;
-            var max = center + half;
-            var points = new[]
-            {
-                // Traverse only cuboid edges. Repeated vertices join the three vertical
-                // edges without drawing through the model as the previous path did.
-                new Vector3(min.x, min.y, min.z), new Vector3(max.x, min.y, min.z),
-                new Vector3(max.x, min.y, max.z), new Vector3(min.x, min.y, max.z),
-                new Vector3(min.x, min.y, min.z), new Vector3(min.x, max.y, min.z),
-                new Vector3(max.x, max.y, min.z), new Vector3(max.x, min.y, min.z),
-                new Vector3(max.x, max.y, min.z), new Vector3(max.x, max.y, max.z),
-                new Vector3(max.x, min.y, max.z), new Vector3(max.x, max.y, max.z),
-                new Vector3(min.x, max.y, max.z), new Vector3(min.x, min.y, max.z),
-                new Vector3(min.x, max.y, max.z), new Vector3(min.x, max.y, min.z)
-            };
-            line.SetPositions(points);
-            var width = Mathf.Max(.004f, size.magnitude * .009f);
-            line.startWidth = width;
-            line.endWidth = width;
-        }
-
-        bool TryGetVisibleBounds(out Bounds bounds)
-        {
-            bounds = default;
-            var hasBounds = false;
-            foreach (var renderer in GetComponentsInChildren<Renderer>(true))
-            {
-                if (renderer == null || renderer == line || !renderer.enabled || !renderer.gameObject.activeInHierarchy)
-                    continue;
-
-                if (!hasBounds)
-                {
-                    bounds = renderer.bounds;
-                    hasBounds = true;
-                }
-                else
-                {
-                    bounds.Encapsulate(renderer.bounds);
-                }
-            }
-
-            return hasBounds;
-        }
-
-        static Vector3 InverseLossyScale(Vector3 scale)
-        {
-            return new Vector3(
-                Mathf.Abs(scale.x) > .0001f ? 1f / scale.x : 1f,
-                Mathf.Abs(scale.y) > .0001f ? 1f / scale.y : 1f,
-                Mathf.Abs(scale.z) > .0001f ? 1f / scale.z : 1f);
-        }
-
-        Material GetSharedMaterial()
-        {
-            if (sharedMaterial != null)
-                return sharedMaterial;
-
-            // Use a shader which is already rendering the liver. Shader.Find alone can
-            // return null in an Android player when the URP unlit variant was stripped.
-            foreach (var renderer in GetComponentsInChildren<Renderer>(true))
-            {
-                if (renderer == null || renderer == line || renderer.sharedMaterial == null)
-                    continue;
-
-                sharedMaterial = new Material(renderer.sharedMaterial) { hideFlags = HideFlags.DontSave };
-                break;
-            }
-
-            if (sharedMaterial == null)
-            {
-                var shader = Shader.Find("Universal Render Pipeline/Unlit");
-                if (shader == null)
-                    return null;
-                sharedMaterial = new Material(shader) { hideFlags = HideFlags.DontSave };
-            }
-
-            var white = new Color(1f, 1f, 1f, 0.98f);
-            if (sharedMaterial.HasProperty("_BaseColor")) sharedMaterial.SetColor("_BaseColor", white);
-            if (sharedMaterial.HasProperty("_Color")) sharedMaterial.SetColor("_Color", white);
-            if (sharedMaterial.HasProperty("_Surface")) sharedMaterial.SetFloat("_Surface", 0f);
-            if (sharedMaterial.HasProperty("_ZWrite")) sharedMaterial.SetFloat("_ZWrite", 1f);
-            if (sharedMaterial.HasProperty("_Cull")) sharedMaterial.SetFloat("_Cull", 0f);
-            sharedMaterial.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Overlay;
-            return sharedMaterial;
-        }
-    }
 }
