@@ -461,14 +461,45 @@ namespace LiverAR.Runtime
             var rowsRect = rows.GetComponent<RectTransform>(); rowsRect.anchorMin = Vector2.zero; rowsRect.anchorMax = Vector2.one; rowsRect.offsetMin = Vector2.zero; rowsRect.offsetMax = Vector2.zero;
             var roots = modelWorkspace != null ? modelWorkspace.Models : null;
             var count = roots != null ? roots.Count : 0;
+
+            var viewport = new GameObject("Model List Viewport", typeof(RectTransform), typeof(Image), typeof(RectMask2D));
+            viewport.transform.SetParent(rows.transform, false);
+            SetAnchors(viewport.GetComponent<RectTransform>(), new Vector2(.08f, .30f), new Vector2(.84f, .60f));
+            viewport.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.02f);
+
+            var content = new GameObject("Model List Content", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+            content.transform.SetParent(viewport.transform, false);
+            var contentRect = content.GetComponent<RectTransform>();
+            contentRect.anchorMin = new Vector2(0f, 1f);
+            contentRect.anchorMax = new Vector2(1f, 1f);
+            contentRect.pivot = new Vector2(.5f, 1f);
+            contentRect.anchoredPosition = Vector2.zero;
+            contentRect.sizeDelta = Vector2.zero;
+            var layout = content.GetComponent<VerticalLayoutGroup>();
+            layout.padding = new RectOffset(0, 0, 4, 4);
+            layout.spacing = 8f;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = false;
+            content.GetComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            var scrollRect = viewport.AddComponent<ScrollRect>();
+            scrollRect.viewport = viewport.GetComponent<RectTransform>();
+            scrollRect.content = contentRect;
+            scrollRect.horizontal = false;
+            scrollRect.vertical = true;
+            scrollRect.movementType = ScrollRect.MovementType.Clamped;
+            scrollRect.scrollSensitivity = 32f;
+
             if (count == 0)
-                CreateRuntimeButton(rows.transform, "Place Liver", new Vector2(.08f,.72f), new Vector2(.84f,.14f), SelectNormalModel);
+                CreateModelListButton(content.transform, "Place Liver", SelectNormalModel);
             else
-                for (var i = 0; i < count && i < 5; i++)
+                for (var i = 0; i < count; i++)
                 {
-                    var root = roots[i]; var y = .64f - i * .14f;
+                    var root = roots[i];
                     if (root == null) continue;
-                    CreateRuntimeButton(rows.transform, root.DisplayName, new Vector2(.08f,y), new Vector2(.84f,.12f), () =>
+                    CreateModelListButton(content.transform, root.DisplayName, () =>
                     {
                         modelWorkspace.Activate(root);
                         activeAnatomyManager = root.AnatomyManager;
@@ -479,9 +510,23 @@ namespace LiverAR.Runtime
             CreateRuntimeButton(rows.transform, "Close", new Vector2(.52f,.18f), new Vector2(.40f,.12f), CancelModelAction);
         }
 
+        static Button CreateModelListButton(Transform parent, string label, UnityEngine.Events.UnityAction action)
+        {
+            var button = CreateRuntimeButton(parent, label, Vector2.zero, Vector2.one, action);
+            var element = button.gameObject.AddComponent<LayoutElement>();
+            element.preferredHeight = 62f;
+            element.minHeight = 62f;
+            return button;
+        }
+
         void OpenModelActions()
         {
-            var old = modelMenuPanel.transform.Find("Model Actions"); if (old != null) Destroy(old.gameObject);
+            var old = modelMenuPanel.transform.Find("Model Actions");
+            if (old != null)
+            {
+                old.gameObject.SetActive(false);
+                Destroy(old.gameObject);
+            }
             var rows = modelMenuPanel.transform.Find("Model Rows");
             if (rows != null) rows.gameObject.SetActive(false);
             var actions = new GameObject("Model Actions", typeof(RectTransform)); actions.transform.SetParent(modelMenuPanel.transform, false);

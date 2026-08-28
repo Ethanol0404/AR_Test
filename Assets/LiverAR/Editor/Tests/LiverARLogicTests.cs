@@ -108,6 +108,24 @@ namespace LiverAR.Tests.EditMode
         }
 
         [Test]
+        public void LiverModelRootCentersOffsetVisualsAtItsOwnPivot()
+        {
+            var root = new GameObject("liver root");
+            root.transform.position = new Vector3(3f, 1f, 2f);
+            var visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            visual.transform.SetParent(root.transform, false);
+            visual.transform.localPosition = new Vector3(2f, 0f, 0f);
+            var liverRoot = root.AddComponent<LiverModelRoot>();
+
+            liverRoot.Initialize(1, "Normal Liver 1");
+
+            Assert.That(Vector3.Distance(visual.GetComponent<Renderer>().bounds.center, root.transform.position), Is.LessThan(0.0001f));
+            Assert.That(Vector3.Distance(root.transform.position, new Vector3(3f, 1f, 2f)), Is.LessThan(0.0001f));
+
+            Object.DestroyImmediate(root);
+        }
+
+        [Test]
         public void TwoFingerPinchScalesRootWithoutTranslation()
         {
             var cameraObject = new GameObject("camera");

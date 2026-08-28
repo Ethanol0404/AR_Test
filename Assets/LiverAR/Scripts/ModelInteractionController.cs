@@ -11,7 +11,6 @@ namespace LiverAR.Runtime
         [SerializeField] Camera arCamera;
         [SerializeField] float minScale = 0.05f;
         [SerializeField] float maxScale = 5f;
-        [SerializeField] float rotateDegreesPerPixel = 0.18f;
         [SerializeField] float yawDegreesPerPixel = 0.12f;
         [SerializeField] float pitchDegreesPerPixel = 0.10f;
         [SerializeField] float pinchDeadZonePixels = 2f;
@@ -157,23 +156,17 @@ namespace LiverAR.Runtime
             {
                 var yaw = averageDelta.x * yawDegreesPerPixel * settings.RotationSpeed;
                 var pitch = Mathf.Clamp(-averageDelta.y * pitchDegreesPerPixel * settings.RotationSpeed, -maxPitchDeltaPerFrame, maxPitchDeltaPerFrame);
-                RotateAroundModelPivot(targetCamera.transform.up, yaw);
-                RotateAroundModelPivot(targetCamera.transform.right, pitch);
+                ApplySelfRotation(Vector3.up, yaw);
+                ApplySelfRotation(targetCamera.transform.right, pitch);
             }
-
-            var previousTwistAngle = Mathf.Atan2(previousSecond.y - previousFirst.y, previousSecond.x - previousFirst.x) * Mathf.Rad2Deg;
-            var currentTwistAngle = Mathf.Atan2(currentSecond.y - currentFirst.y, currentSecond.x - currentFirst.x) * Mathf.Rad2Deg;
-            var twistDelta = Mathf.DeltaAngle(previousTwistAngle, currentTwistAngle);
-            if (Mathf.Abs(twistDelta) >= rotationDeadZonePixels)
-                RotateAroundModelPivot(targetCamera.transform.forward, -twistDelta * rotateDegreesPerPixel * settings.RotationSpeed);
         }
 
-        void RotateAroundModelPivot(Vector3 axis, float degrees)
+        void ApplySelfRotation(Vector3 axis, float degrees)
         {
             if (modelRoot == null || axis.sqrMagnitude < 0.000001f || Mathf.Abs(degrees) < 0.001f)
                 return;
 
-            modelRoot.Rotate(axis.normalized, degrees, Space.World);
+            modelRoot.rotation = Quaternion.AngleAxis(degrees, axis.normalized) * modelRoot.rotation;
         }
 
         void HandleEditorScale()
