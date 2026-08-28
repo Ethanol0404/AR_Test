@@ -24,6 +24,7 @@ namespace LiverAR.Runtime
         [SerializeField] float moveMetersPerPixel = 0.0015f;
         [SerializeField] float depthMetersPerPixel = 0.002f;
         [SerializeField] LiverARSettings settings = new LiverARSettings();
+        [SerializeField] LiverModelWorkspace modelWorkspace;
 
         Vector3 originalPosition;
         Quaternion originalRotation;
@@ -53,6 +54,8 @@ namespace LiverAR.Runtime
         void OnEnable()
         {
             TouchInput.Enable();
+            if (modelWorkspace == null)
+                modelWorkspace = FindAnyObjectByType<LiverModelWorkspace>();
         }
 
         public void CaptureOriginalTransform()
@@ -97,6 +100,8 @@ namespace LiverAR.Runtime
 
         void Update()
         {
+            if (modelWorkspace != null)
+                modelRoot = modelWorkspace.ActiveModel != null ? modelWorkspace.ActiveModel.transform : null;
             var touches = TouchInput.ActiveTouches;
             if (modelRoot == null)
                 return;
@@ -168,37 +173,7 @@ namespace LiverAR.Runtime
             if (modelRoot == null || axis.sqrMagnitude < 0.000001f || Mathf.Abs(degrees) < 0.001f)
                 return;
 
-            var centerBefore = GetVisibleBoundsCenter();
             modelRoot.Rotate(axis.normalized, degrees, Space.World);
-            var centerAfter = GetVisibleBoundsCenter();
-            modelRoot.position += centerBefore - centerAfter;
-        }
-
-        Vector3 GetVisibleBoundsCenter()
-        {
-            if (modelRoot == null)
-                return Vector3.zero;
-
-            var renderers = modelRoot.GetComponentsInChildren<Renderer>(false);
-            var hasBounds = false;
-            var bounds = new Bounds(modelRoot.position, Vector3.zero);
-            foreach (var renderer in renderers)
-            {
-                if (renderer == null || !renderer.enabled)
-                    continue;
-
-                if (!hasBounds)
-                {
-                    bounds = renderer.bounds;
-                    hasBounds = true;
-                }
-                else
-                {
-                    bounds.Encapsulate(renderer.bounds);
-                }
-            }
-
-            return hasBounds ? bounds.center : modelRoot.position;
         }
 
         void HandleEditorScale()

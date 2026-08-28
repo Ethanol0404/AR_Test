@@ -81,7 +81,7 @@ namespace LiverAR.Tests.EditMode
         }
 
         [Test]
-        public void TwoFingerRotationKeepsVisibleCenterStableForOffsetMeshes()
+        public void TwoFingerRotationKeepsRootPositionFixedForOffsetMeshes()
         {
             var cameraObject = new GameObject("camera");
             var camera = cameraObject.AddComponent<Camera>();
@@ -90,7 +90,7 @@ namespace LiverAR.Tests.EditMode
             child.transform.SetParent(root.transform, false);
             child.transform.localPosition = new Vector3(2f, 0f, 0f);
             var controller = CreateModelInteractionController(root.transform);
-            var centerBefore = child.GetComponent<Renderer>().bounds.center;
+            var positionBefore = root.transform.position;
 
             controller.ApplyTwoFingerTransform(
                 new Vector2(100f, 100f),
@@ -99,8 +99,7 @@ namespace LiverAR.Tests.EditMode
                 new Vector2(240f, 100f),
                 camera);
 
-            var centerAfter = child.GetComponent<Renderer>().bounds.center;
-            Assert.That(Vector3.Distance(centerBefore, centerAfter), Is.LessThan(0.001f));
+            Assert.That(root.transform.position, Is.EqualTo(positionBefore));
             Assert.That(Quaternion.Angle(Quaternion.identity, root.transform.rotation), Is.GreaterThan(0.1f));
 
             Object.DestroyImmediate(controller.gameObject);
@@ -215,6 +214,24 @@ namespace LiverAR.Tests.EditMode
             Object.DestroyImmediate(a.gameObject);
             Object.DestroyImmediate(b.gameObject);
             Object.DestroyImmediate(managerObject);
+        }
+
+        [Test]
+        public void SelectingAnatomyPartPreservesItsBaseColour()
+        {
+            var root = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            var renderer = root.GetComponent<Renderer>();
+            var part = root.AddComponent<AnatomyPart>();
+            var expected = new Color(0.2f, 0.6f, 0.9f, 1f);
+            part.Configure("segment-v", "Segment V", AnatomyCategory.LiverSegment, expected, new[] { renderer });
+
+            part.SetSelected(true);
+
+            var properties = new MaterialPropertyBlock();
+            renderer.GetPropertyBlock(properties);
+            Assert.That(properties.GetColor("_BaseColor"), Is.EqualTo(expected));
+
+            Object.DestroyImmediate(root);
         }
 
         [Test]

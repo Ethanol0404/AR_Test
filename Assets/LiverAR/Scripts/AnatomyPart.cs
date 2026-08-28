@@ -12,9 +12,9 @@ namespace LiverAR.Runtime
         [SerializeField] AnatomyCategory category = AnatomyCategory.Other;
         [SerializeField] Color defaultColor = Color.white;
         [SerializeField] Renderer[] renderers = Array.Empty<Renderer>();
-        [SerializeField] Color highlightColor = new Color(1f, 0.92f, 0.25f, 1f);
 
         MaterialPropertyBlock propertyBlock;
+        AnatomySelectionOutline selectionOutline;
         readonly Dictionary<Material, int> originalRenderQueues = new Dictionary<Material, int>();
         Collider[] colliders = Array.Empty<Collider>();
         float opacity = 1f;
@@ -48,6 +48,7 @@ namespace LiverAR.Runtime
         {
             propertyBlock = new MaterialPropertyBlock();
             CacheReferences();
+            selectionOutline = GetComponent<AnatomySelectionOutline>() ?? gameObject.AddComponent<AnatomySelectionOutline>();
             ApplyAppearance();
         }
 
@@ -86,6 +87,9 @@ namespace LiverAR.Runtime
         public void SetSelected(bool selected)
         {
             isSelected = selected;
+            if (selectionOutline == null)
+                selectionOutline = GetComponent<AnatomySelectionOutline>() ?? gameObject.AddComponent<AnatomySelectionOutline>();
+            selectionOutline.SetVisible(selected);
             ApplyAppearance();
         }
 
@@ -128,7 +132,7 @@ namespace LiverAR.Runtime
             if (propertyBlock == null)
                 propertyBlock = new MaterialPropertyBlock();
 
-            var color = isSelected ? highlightColor : defaultColor;
+            var color = defaultColor;
             color.a = opacity;
 
             foreach (var partRenderer in renderers)
@@ -184,6 +188,74 @@ namespace LiverAR.Runtime
                 material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
                 material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
             }
+        }
+    }
+}
+
+namespace LiverAR.Runtime
+{
+    [DisallowMultipleComponent]
+    sealed class AnatomySelectionOutline : MonoBehaviour
+    {
+        static Material sharedMaterial;
+        readonly List<GameObject> outlines = new List<GameObject>();
+        bool initialized;
+
+        public void SetVisible(bool visible)
+        {
+            EnsureInitialized();
+            foreach (var outline in outlines)
+            {
+                if (outline != null)
+                    outline.SetActive(visible);
+            }
+        }
+
+        void EnsureInitialized()
+        {
+            if (initialized)
+                return;
+
+            initialized = true;
+            var material = GetSharedMaterial();
+            if (material == null)
+                return;
+
+            foreach (var source in GetComponentsInChildren<MeshFilter>(true))
+            {
+                if (source.sharedMesh == null || source.transform.name == "Selection Outline")
+                    continue;
+
+                var outline = new GameObject("Selection Outline");
+                outline.transform.SetParent(source.transform.parent, false);
+                outline.transform.localPosition = source.transform.localPosition;
+                outline.transform.localRotation = source.transform.localRotation;
+                outline.transform.localScale = source.transform.localScale * 1.015f;
+                outline.AddComponent<MeshFilter>().sharedMesh = source.sharedMesh;
+                outline.AddComponent<MeshRenderer>().sharedMaterial = material;
+                outline.SetActive(false);
+                outlines.Add(outline);
+            }
+        }
+
+        static Material GetSharedMaterial()
+        {
+            if (sharedMaterial != null)
+                return sharedMaterial;
+
+            var shader = Shader.Find("Universal Render Pipeline/Unlit");
+            if (shader == null)
+                return null;
+
+            sharedMaterial = new Material(shader)
+            {
+                hideFlags = HideFlags.DontSave
+            };
+            sharedMaterial.SetColor("_BaseColor", new Color(1f, 1f, 1f, 0.98f));
+            sharedMaterial.SetFloat("_Cull", (float)UnityEngine.Rendering.CullMode.Front);
+            sharedMaterial.SetFloat("_ZWrite", 0f);
+            sharedMaterial.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent + 10;
+            return sharedMaterial;
         }
     }
 }
