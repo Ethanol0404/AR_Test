@@ -184,6 +184,11 @@ namespace LiverAR.Runtime
                 if (!originalRenderQueues.ContainsKey(material))
                     originalRenderQueues[material] = material.renderQueue;
 
+                var materialColor = defaultColor;
+                materialColor.a = alpha;
+                material.SetColor("_BaseColor", materialColor);
+                material.SetColor("_Color", materialColor);
+
                 if (alpha >= 0.99f)
                 {
                     material.SetFloat("_Surface", 0f);
@@ -192,6 +197,8 @@ namespace LiverAR.Runtime
                     material.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.Zero);
                     material.SetFloat("_ZWrite", 1f);
                     material.DisableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                    material.SetOverrideTag("RenderType", "Opaque");
+                    material.SetShaderPassEnabled("ShadowCaster", true);
                     material.renderQueue = originalRenderQueues[material];
                     continue;
                 }
@@ -202,6 +209,8 @@ namespace LiverAR.Runtime
                 material.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
                 material.SetFloat("_ZWrite", 0f);
                 material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                material.SetOverrideTag("RenderType", "Transparent");
+                material.SetShaderPassEnabled("ShadowCaster", false);
                 material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
             }
         }

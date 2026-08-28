@@ -11,7 +11,7 @@ namespace LiverAR.Tests.EditMode
         public void ScaleLimitsClampUniformScale()
         {
             Assert.That(ModelInteractionController.ClampScale(0.01f, 0.05f, 2f), Is.EqualTo(0.05f));
-            Assert.That(ModelInteractionController.ClampScale(3f, 0.05f, 2f), Is.EqualTo(2f));
+            Assert.That(ModelInteractionController.ClampScale(6f, 0.05f, 5f), Is.EqualTo(5f));
             Assert.That(ModelInteractionController.ClampScale(0.75f, 0.05f, 2f), Is.EqualTo(0.75f));
         }
 
