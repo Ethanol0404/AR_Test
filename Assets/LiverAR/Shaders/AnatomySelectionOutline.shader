@@ -2,22 +2,23 @@ Shader "LiverAR/Anatomy Selection Outline"
 {
     Properties
     {
-        _BaseColor("Outline Color", Color) = (1, 1, 1, 0.98)
+        _BaseColor("Outline Color", Color) = (1, 1, 1, 1)
+        _OutlineCenter("Mesh Center", Vector) = (0, 0, 0, 0)
+        _OutlineScale("Outline Scale", Float) = 1.015
     }
 
     SubShader
     {
-        Tags { "RenderPipeline" = "UniversalPipeline" "RenderType" = "Transparent" "Queue" = "Transparent+10" }
+        Tags { "RenderPipeline" = "UniversalPipeline" "RenderType" = "Opaque" "Queue" = "Geometry-1" }
 
         Pass
         {
             Name "SelectionOutline"
             Tags { "LightMode" = "UniversalForward" }
 
-            Cull Front
-            ZWrite Off
+            Cull Off
+            ZWrite On
             ZTest LEqual
-            Blend SrcAlpha OneMinusSrcAlpha
 
             HLSLPROGRAM
             #pragma vertex Vert
@@ -27,6 +28,8 @@ Shader "LiverAR/Anatomy Selection Outline"
 
             CBUFFER_START(UnityPerMaterial)
                 half4 _BaseColor;
+                float4 _OutlineCenter;
+                float _OutlineScale;
             CBUFFER_END
 
             struct Attributes
@@ -42,7 +45,9 @@ Shader "LiverAR/Anatomy Selection Outline"
             Varyings Vert(Attributes input)
             {
                 Varyings output;
-                output.positionHCS = TransformObjectToHClip(input.positionOS.xyz);
+                float3 expandedPosition = _OutlineCenter.xyz +
+                    (input.positionOS.xyz - _OutlineCenter.xyz) * _OutlineScale;
+                output.positionHCS = TransformObjectToHClip(expandedPosition);
                 return output;
             }
 

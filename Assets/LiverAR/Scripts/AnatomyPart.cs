@@ -254,9 +254,15 @@ namespace LiverAR.Runtime
                 outline.transform.SetParent(source.transform.parent, false);
                 outline.transform.localPosition = source.transform.localPosition;
                 outline.transform.localRotation = source.transform.localRotation;
-                outline.transform.localScale = source.transform.localScale * 1.015f;
+                outline.transform.localScale = source.transform.localScale;
                 outline.AddComponent<MeshFilter>().sharedMesh = source.sharedMesh;
-                outline.AddComponent<MeshRenderer>().sharedMaterial = material;
+                var outlineRenderer = outline.AddComponent<MeshRenderer>();
+                outlineRenderer.sharedMaterial = material;
+
+                var properties = new MaterialPropertyBlock();
+                properties.SetVector("_OutlineCenter", source.sharedMesh.bounds.center);
+                properties.SetFloat("_OutlineScale", 1.015f);
+                outlineRenderer.SetPropertyBlock(properties);
                 outline.SetActive(false);
                 outlines.Add(outline);
             }
