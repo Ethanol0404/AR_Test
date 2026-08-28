@@ -16,8 +16,10 @@ Shader "LiverAR/Anatomy Selection Outline"
             Name "SelectionOutline"
             Tags { "LightMode" = "UniversalForward" }
 
-            Cull Off
-            ZWrite On
+            // Draw only the back-facing expanded shell. The normal coloured mesh
+            // renders afterwards and covers the shell's interior.
+            Cull Front
+            ZWrite Off
             ZTest LEqual
 
             HLSLPROGRAM
