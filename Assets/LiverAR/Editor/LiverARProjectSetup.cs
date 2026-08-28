@@ -178,6 +178,39 @@ namespace LiverAR.Editor
             Debug.Log("Repaired anatomy materials using the active Android-compatible render pipeline shader.");
         }
 
+        public static void RebuildAnatomyPrefabIfSourceModelsChanged()
+        {
+            if (!NeedsAnatomyPrefabRebuild())
+            {
+                Debug.Log("Anatomy source models unchanged; skipped the expensive prefab rebuild.");
+                return;
+            }
+
+            RebuildAnatomyPrefabFromSourceModels();
+        }
+
+        static bool NeedsAnatomyPrefabRebuild()
+        {
+            if (!File.Exists(PrefabPath))
+                return true;
+
+            var prefabTime = File.GetLastWriteTimeUtc(PrefabPath);
+            var sourceDirectories = new[] { SourceModelsPath, ConvertedVesselsPath };
+            foreach (var directory in sourceDirectories)
+            {
+                if (!Directory.Exists(directory))
+                    continue;
+
+                foreach (var sourceFile in Directory.GetFiles(directory, "*", SearchOption.AllDirectories))
+                {
+                    if (File.GetLastWriteTimeUtc(sourceFile) > prefabTime)
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
         [InitializeOnLoadMethod]
         static void QueueOneTimeSourceModelPrefabRebuild()
         {

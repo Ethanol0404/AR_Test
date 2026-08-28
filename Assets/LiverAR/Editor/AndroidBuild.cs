@@ -9,7 +9,7 @@ namespace LiverAR.Editor
         public static void BuildAndRun()
         {
             LiverARProjectSetup.RepairAnatomyMaterials();
-            LiverARProjectSetup.RebuildAnatomyPrefabFromSourceModels();
+            LiverARProjectSetup.RebuildAnatomyPrefabIfSourceModelsChanged();
 
             var options = new BuildPlayerOptions
             {
