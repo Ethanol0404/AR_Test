@@ -229,18 +229,36 @@ namespace LiverAR.Runtime
                 Mathf.Abs(scale.z) > .0001f ? 1f / scale.z : 1f);
         }
 
-        static Material GetSharedMaterial()
+        Material GetSharedMaterial()
         {
             if (sharedMaterial != null)
                 return sharedMaterial;
 
-            var shader = Shader.Find("Universal Render Pipeline/Unlit");
-            if (shader == null)
-                return null;
+            // Use a shader which is already rendering the liver. Shader.Find alone can
+            // return null in an Android player when the URP unlit variant was stripped.
+            foreach (var renderer in GetComponentsInChildren<Renderer>(true))
+            {
+                if (renderer == null || renderer == line || renderer.sharedMaterial == null)
+                    continue;
 
-            sharedMaterial = new Material(shader) { hideFlags = HideFlags.DontSave };
-            sharedMaterial.SetColor("_BaseColor", new Color(1f, 1f, 1f, 0.98f));
-            sharedMaterial.SetFloat("_ZWrite", 1f);
+                sharedMaterial = new Material(renderer.sharedMaterial) { hideFlags = HideFlags.DontSave };
+                break;
+            }
+
+            if (sharedMaterial == null)
+            {
+                var shader = Shader.Find("Universal Render Pipeline/Unlit");
+                if (shader == null)
+                    return null;
+                sharedMaterial = new Material(shader) { hideFlags = HideFlags.DontSave };
+            }
+
+            var white = new Color(1f, 1f, 1f, 0.98f);
+            if (sharedMaterial.HasProperty("_BaseColor")) sharedMaterial.SetColor("_BaseColor", white);
+            if (sharedMaterial.HasProperty("_Color")) sharedMaterial.SetColor("_Color", white);
+            if (sharedMaterial.HasProperty("_Surface")) sharedMaterial.SetFloat("_Surface", 0f);
+            if (sharedMaterial.HasProperty("_ZWrite")) sharedMaterial.SetFloat("_ZWrite", 1f);
+            if (sharedMaterial.HasProperty("_Cull")) sharedMaterial.SetFloat("_Cull", 0f);
             sharedMaterial.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Overlay;
             return sharedMaterial;
         }
