@@ -54,7 +54,7 @@ namespace LiverAR.Runtime
         {
             TouchInput.Enable();
             if (modelWorkspace == null)
-                modelWorkspace = FindAnyObjectByType<LiverModelWorkspace>();
+                modelWorkspace = LiverModelWorkspace.GetOrCreate(arCamera);
         }
 
         public void CaptureOriginalTransform()

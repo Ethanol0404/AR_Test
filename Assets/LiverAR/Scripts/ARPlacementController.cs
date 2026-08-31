@@ -15,6 +15,7 @@ namespace LiverAR.Runtime
         [SerializeField] ModelInteractionController interactionController;
         [SerializeField] AnatomyManager anatomyManager;
         [SerializeField] Camera arCamera;
+        [SerializeField] LiverModelWorkspace modelWorkspace;
         [SerializeField] float editorPlacementDistance = 1.4f;
         [SerializeField] float virtualSurfaceDistance = 1.2f;
         [SerializeField] GameObject virtualSurfaceVisual;
@@ -93,11 +94,13 @@ namespace LiverAR.Runtime
                 ReportMissingSegmentReferences(normalModelInstance);
                 ApplySelectedModel();
                 AlignVesselToLiver(normalModelInstance.transform);
+                modelWorkspace = modelWorkspace != null ? modelWorkspace : LiverModelWorkspace.GetOrCreate(arCamera);
+                var registeredRoot = modelWorkspace.Register(placedModel, "Normal Liver");
                 FitPlacedModelIntoCameraView();
 
                 if (interactionController != null)
                 {
-                    interactionController.ModelRoot = placedModel.transform;
+                    interactionController.ModelRoot = registeredRoot != null ? registeredRoot.transform : placedModel.transform;
                     interactionController.CaptureOriginalTransform();
                 }
                 RefreshAnatomyReferences();
@@ -164,7 +167,9 @@ namespace LiverAR.Runtime
 
         public void ResetPlacement()
         {
-            if (placedModel != null)
+            if (modelWorkspace != null)
+                modelWorkspace.ClearAllModels();
+            else if (placedModel != null)
                 Destroy(placedModel);
 
             placedModel = null;
@@ -504,6 +509,8 @@ namespace LiverAR.Runtime
                 anatomyManager = FindAnyObjectByType<AnatomyManager>();
             if (interactionController == null)
                 interactionController = FindAnyObjectByType<ModelInteractionController>();
+            if (modelWorkspace == null)
+                modelWorkspace = LiverModelWorkspace.GetOrCreate(arCamera);
             if (virtualSurfaceVisual == null)
                 virtualSurfaceVisual = CreateRuntimeVirtualSurface();
         }

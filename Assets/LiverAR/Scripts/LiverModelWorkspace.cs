@@ -16,9 +16,26 @@ namespace LiverAR.Runtime
         public event Action<LiverModelRoot> ActiveModelChanged;
         public event Action ModelsChanged;
 
+        public static LiverModelWorkspace GetOrCreate(Camera camera = null)
+        {
+            var workspace = FindAnyObjectByType<LiverModelWorkspace>();
+            if (workspace == null)
+            {
+                var host = new GameObject("Liver Model Workspace");
+                workspace = host.AddComponent<LiverModelWorkspace>();
+            }
+
+            if (workspace.arCamera == null)
+                workspace.arCamera = camera != null ? camera : Camera.main;
+
+            return workspace;
+        }
+
         void Awake()
         {
             if (modelsRoot == null) { var host = new GameObject("ModelsRoot"); modelsRoot = host.transform; }
+            if (arCamera == null)
+                arCamera = Camera.main;
         }
         public LiverModelRoot Register(GameObject model, string typeName = "Normal Liver")
         {

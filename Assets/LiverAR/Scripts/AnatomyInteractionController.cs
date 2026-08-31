@@ -37,7 +37,7 @@ namespace LiverAR.Runtime
             if (modelInteractionController == null)
                 modelInteractionController = modelInteraction;
             if (modelWorkspace == null)
-                modelWorkspace = FindAnyObjectByType<LiverModelWorkspace>();
+                modelWorkspace = LiverModelWorkspace.GetOrCreate(arCamera != null ? arCamera : camera);
         }
 
         void OnEnable()
@@ -96,7 +96,7 @@ namespace LiverAR.Runtime
         void BeginTouch(TouchInput.PointerInput pointer)
         {
             if (modelWorkspace == null)
-                modelWorkspace = FindAnyObjectByType<LiverModelWorkspace>();
+                modelWorkspace = LiverModelWorkspace.GetOrCreate(arCamera);
             activePointerId = pointer.PointerId;
             startPosition = pointer.ScreenPosition;
             startTime = Time.unscaledTime;

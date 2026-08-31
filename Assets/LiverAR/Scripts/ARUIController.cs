@@ -1410,7 +1410,7 @@ namespace LiverAR.Runtime
             if (anatomyManager == null)
                 anatomyManager = FindAnyObjectByType<AnatomyManager>();
             if (modelWorkspace == null)
-                modelWorkspace = FindAnyObjectByType<LiverModelWorkspace>();
+                modelWorkspace = LiverModelWorkspace.GetOrCreate(Camera.main);
             if (transparencyController == null)
                 transparencyController = FindAnyObjectByType<TransparencyController>();
             if (modelInteractionController == null)
