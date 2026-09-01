@@ -28,6 +28,8 @@ namespace LiverAR.Runtime
         Vector3 originalPosition;
         Quaternion originalRotation;
         Vector3 originalScale;
+        Transform scaleReferenceModel;
+        float scaleReference = 1f;
 
         public Transform ModelRoot
         {
@@ -65,6 +67,8 @@ namespace LiverAR.Runtime
             originalPosition = modelRoot.position;
             originalRotation = modelRoot.rotation;
             originalScale = modelRoot.localScale;
+            scaleReferenceModel = modelRoot;
+            scaleReference = Mathf.Max(Mathf.Abs(modelRoot.localScale.x), 0.000001f);
         }
 
         public void ResetTransform()
@@ -105,6 +109,8 @@ namespace LiverAR.Runtime
             if (modelRoot == null)
                 return;
 
+            EnsureScaleReference();
+
             if (touches.Count >= 2)
             {
                 if (TouchInput.IsAnyTouchOverUi())
@@ -137,6 +143,8 @@ namespace LiverAR.Runtime
             if (modelRoot == null || targetCamera == null)
                 return;
 
+            EnsureScaleReference();
+
             var previousDistance = Vector2.Distance(previousFirst, previousSecond);
             var currentDistance = Vector2.Distance(currentFirst, currentSecond);
             var distanceDelta = currentDistance - previousDistance;
@@ -145,7 +153,7 @@ namespace LiverAR.Runtime
                 var ratio = currentDistance / Mathf.Max(previousDistance, 0.001f);
                 var current = modelRoot.localScale.x;
                 var adjustedRatio = 1f + ((ratio - 1f) * settings.ScaleSensitivity);
-                var next = ClampScale(current * adjustedRatio, minScale, maxScale);
+                var next = ClampScale(current * adjustedRatio, scaleReference * minScale, scaleReference * maxScale);
                 modelRoot.localScale = Vector3.one * next;
             }
 
@@ -179,9 +187,19 @@ namespace LiverAR.Runtime
             if (Mathf.Abs(wheel) < 0.01f)
                 return;
 
+            EnsureScaleReference();
             var current = modelRoot.localScale.x;
-            var next = ClampScale(current + wheel * 0.0005f * settings.ScaleSensitivity, minScale, maxScale);
+            var next = ClampScale(current + wheel * scaleReference * 0.0005f * settings.ScaleSensitivity, scaleReference * minScale, scaleReference * maxScale);
             modelRoot.localScale = Vector3.one * next;
+        }
+
+        void EnsureScaleReference()
+        {
+            if (modelRoot == null || scaleReferenceModel == modelRoot)
+                return;
+
+            scaleReferenceModel = modelRoot;
+            scaleReference = Mathf.Max(Mathf.Abs(modelRoot.localScale.x), 0.000001f);
         }
 
         Camera ResolveCamera(Camera camera)
