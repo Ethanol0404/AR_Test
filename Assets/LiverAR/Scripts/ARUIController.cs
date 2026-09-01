@@ -895,7 +895,7 @@ namespace LiverAR.Runtime
             virtualSurfaceButton.gameObject.SetActive(false);
 
             compactMenuPanel = CreateRuntimePanel(root, "Compact Menu", new Vector2(0.66f, 0.45f), new Vector2(0.31f, 0.35f));
-            CreateRuntimeButton(compactMenuPanel.transform, "Model", new Vector2(0.08f, 0.76f), new Vector2(0.84f, 0.16f), SelectNormalModel);
+            CreateRuntimeButton(compactMenuPanel.transform, "Model", new Vector2(0.08f, 0.76f), new Vector2(0.84f, 0.16f), OpenModelMenu);
             CreateRuntimeButton(compactMenuPanel.transform, "Segmentation", new Vector2(0.08f, 0.58f), new Vector2(0.84f, 0.16f), OpenSegmentationMenu);
             CreateRuntimeButton(compactMenuPanel.transform, "Settings", new Vector2(0.08f, 0.40f), new Vector2(0.84f, 0.16f), OpenSettingsPanel);
             CreateRuntimeButton(compactMenuPanel.transform, "Information", new Vector2(0.08f, 0.22f), new Vector2(0.84f, 0.16f), OpenInformationMenu);
