@@ -68,7 +68,7 @@ public final class LiverARPickerActivity extends Activity {
                     LiverARFilePicker.setPendingStatus("Copying " + name + "...");
                     Uri document = DocumentsContract.buildDocumentUriUsingTree(tree, cursor.getString(0));
                     copyFile(document, new File(destination, name));
-                } else if (DocumentsContract.Document.MIME_TYPE_DIR.equals(cursor.getString(2))) {
+                } else if (DocumentsContract.Document.MIME_TYPE_DIR.equals(cursor.getString(2)) && !"source".equalsIgnoreCase(name)) {
                     Uri document = DocumentsContract.buildDocumentUriUsingTree(tree, cursor.getString(0));
                     copyRequiredFiles(document, destination, true);
                 }
