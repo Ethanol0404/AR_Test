@@ -7,11 +7,16 @@ namespace LiverAR.Runtime
     {
         [SerializeField] ARSession session;
         [SerializeField] ARPlacementController placementController;
+        [SerializeField] LiverModelWorkspace modelWorkspace;
 
         public void ResetSession()
         {
             if (placementController != null)
                 placementController.ResetPlacement();
+
+            if (modelWorkspace == null)
+                modelWorkspace = FindAnyObjectByType<LiverModelWorkspace>();
+            modelWorkspace?.ClearAllModels();
 
             if (session != null)
                 session.Reset();

@@ -425,6 +425,16 @@ namespace LiverAR.Tests.EditMode
         }
 
         [Test]
+        public void PatientGlbMetadataAcceptsExport2Contract()
+        {
+            var metadata = PatientModelImportContract.ParseMetadata(
+                "{\"formatVersion\":1,\"units\":\"mm\",\"coordinateSystem\":{\"source\":\"LPS\",\"unityConversion\":\"metadata-defined\"},\"glbFile\":\"patient.glb\",\"glbRootNode\":\"PatientModelRoot\",\"models\":[{\"name\":\"Segment_I\",\"id\":\"Segment_I\",\"displayName\":\"Segment I\",\"file\":\"Segment_I.obj\",\"role\":\"anatomy\"}]}" );
+
+            Assert.That(metadata.glbFile, Is.EqualTo("patient.glb"));
+            Assert.That(metadata.Models[0].DisplayName, Is.EqualTo("Segment I"));
+        }
+
+        [Test]
         public void ModelSwitcherPreservesTransformAndAvoidsDuplicates()
         {
             var root = new GameObject("placement-root").transform;

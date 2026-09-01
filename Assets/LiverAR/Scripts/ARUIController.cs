@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -45,6 +46,7 @@ namespace LiverAR.Runtime
         [SerializeField] LiverModelSwitcher modelSwitcher;
         [SerializeField] ARBackgroundController backgroundController;
         [SerializeField] LiverModelWorkspace modelWorkspace;
+        [SerializeField] RuntimePatientGlbLoader patientGlbLoader;
         GameObject modelMenuPanel;
         AnatomyManager activeAnatomyManager;
 
@@ -83,6 +85,8 @@ namespace LiverAR.Runtime
                 anatomyManager.SelectionChanged += OnSelectionChanged;
             if (backgroundController != null)
                 backgroundController.StatusMessageChanged += OnBackgroundStatusMessageChanged;
+            if (patientGlbLoader != null)
+                patientGlbLoader.StatusChanged += OnPatientModelStatusChanged;
 
             BindSelectedOpacitySlider();
 
@@ -99,6 +103,8 @@ namespace LiverAR.Runtime
                 anatomyManager.SelectionChanged -= OnSelectionChanged;
             if (backgroundController != null)
                 backgroundController.StatusMessageChanged -= OnBackgroundStatusMessageChanged;
+            if (patientGlbLoader != null)
+                patientGlbLoader.StatusChanged -= OnPatientModelStatusChanged;
 
             if (selectedOpacitySlider != null)
                 selectedOpacitySlider.onValueChanged.RemoveListener(OnTransparencyChanged);
@@ -168,6 +174,16 @@ namespace LiverAR.Runtime
             }
 
             ShowTemporaryModelMessage(string.IsNullOrWhiteSpace(reason) ? "Liver placement failed. Please try again." : reason, 3f, false);
+        }
+
+        public void ImportPatientModel()
+        {
+            if (patientGlbLoader == null)
+            {
+                ShowTemporaryModelMessage("Patient GLB loader is not configured.", 2.5f, false);
+                return;
+            }
+            patientGlbLoader.PickPatientModel();
         }
 
         public void UseVirtualSurface() => placementController?.UseVirtualSurface();
@@ -700,6 +716,20 @@ namespace LiverAR.Runtime
                 modelMessageBackground.gameObject.SetActive(!string.IsNullOrWhiteSpace(message));
         }
 
+        void OnPatientModelStatusChanged(string message)
+        {
+            var failed = patientGlbLoader != null && !string.IsNullOrWhiteSpace(patientGlbLoader.LastError);
+            var finished = string.Equals(message, "Patient GLB loaded successfully.", StringComparison.Ordinal);
+            var inProgress = patientGlbLoader != null && patientGlbLoader.IsLoading;
+            if (inProgress && !failed)
+                ShowPersistentModelMessage(message, false);
+            else
+                ShowTemporaryModelMessage(message, failed ? 4f : 5f, !failed);
+
+            if (finished)
+                OpenModelMenu();
+        }
+
         void ShowPersistentModelMessage(string message, bool success)
         {
             if (modelMessageRoutine != null)
@@ -755,6 +785,7 @@ namespace LiverAR.Runtime
             CreateRuntimeButton(compactMenuPanel.transform, "Segmentation", new Vector2(0.08f, 0.58f), new Vector2(0.84f, 0.16f), OpenSegmentationMenu);
             CreateRuntimeButton(compactMenuPanel.transform, "Settings", new Vector2(0.08f, 0.40f), new Vector2(0.84f, 0.16f), OpenSettingsPanel);
             CreateRuntimeButton(compactMenuPanel.transform, "Reset Placement", new Vector2(0.08f, 0.22f), new Vector2(0.84f, 0.16f), ResetPlacement);
+            CreateRuntimeButton(compactMenuPanel.transform, "Import Patient Model", new Vector2(0.08f, 0.04f), new Vector2(0.84f, 0.14f), ImportPatientModel);
 
             segmentationMenuPanel = CreateRuntimePanel(root, "Segmentation Menu", new Vector2(0.04f, 0.13f), new Vector2(0.32f, 0.30f));
             CreateRuntimeButton(segmentationMenuPanel.transform, "Couinaud Segments", new Vector2(0.08f, 0.66f), new Vector2(0.84f, 0.20f), OpenCouinaudSegmentsPanel);
@@ -814,6 +845,7 @@ namespace LiverAR.Runtime
                 EnsurePanelButton(compactMenuPanel, "Segmentation", new Vector2(0.08f, 0.58f), new Vector2(0.84f, 0.16f), OpenSegmentationMenu);
                 EnsurePanelButton(compactMenuPanel, "Settings", new Vector2(0.08f, 0.40f), new Vector2(0.84f, 0.16f), OpenSettingsPanel);
                 EnsurePanelButton(compactMenuPanel, "Reset Placement", new Vector2(0.08f, 0.22f), new Vector2(0.84f, 0.16f), ResetPlacement);
+                EnsurePanelButton(compactMenuPanel, "Import Patient Model", new Vector2(0.08f, 0.04f), new Vector2(0.84f, 0.14f), ImportPatientModel);
             }
 
             if (segmentationMenuPanel == null)
@@ -972,11 +1004,13 @@ namespace LiverAR.Runtime
             BindButton("Isolate Button", IsolateSelected);
             BindButton("Reset Settings Button", ResetSettings);
             BindButton("Reset Segments Button", ResetAppearance);
+            BindButton("Import Patient Model Button", ImportPatientModel);
 
             BindPanelButton(compactMenuPanel, "Model Button", OpenModelMenu);
             BindPanelButton(compactMenuPanel, "Segmentation Button", OpenSegmentationMenu);
             BindPanelButton(compactMenuPanel, "Settings Button", OpenSettingsPanel);
             BindPanelButton(compactMenuPanel, "Reset Placement Button", ResetPlacement);
+            BindPanelButton(compactMenuPanel, "Import Patient Model Button", ImportPatientModel);
             BindPanelButton(segmentationMenuPanel, "Couinaud Segments Button", OpenCouinaudSegmentsPanel);
             BindPanelButton(segmentationMenuPanel, "Blood Vessel Button", OpenVesselsPanel);
             BindPanelButton(segmentationMenuPanel, "Vessels Button", OpenVesselsPanel);
@@ -1425,6 +1459,10 @@ namespace LiverAR.Runtime
                 backgroundController = FindAnyObjectByType<ARBackgroundController>();
             if (backgroundController == null)
                 backgroundController = gameObject.AddComponent<ARBackgroundController>();
+            if (patientGlbLoader == null)
+                patientGlbLoader = FindAnyObjectByType<RuntimePatientGlbLoader>();
+            if (patientGlbLoader == null)
+                patientGlbLoader = gameObject.AddComponent<RuntimePatientGlbLoader>();
 
             EnsureAnatomyInteractionController();
         }
