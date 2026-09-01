@@ -83,7 +83,7 @@ namespace LiverAR.Runtime
 
         static void ConfigureParts(Transform root, PatientModelMetadata metadata)
         {
-            for (var index = 0; index < metadata.Models.Count; index++)
+            for (var index = 0; index < metadata.Models.Length; index++)
             {
                 var entry = metadata.Models[index];
                 var node = FindChild(root, entry.Name);
