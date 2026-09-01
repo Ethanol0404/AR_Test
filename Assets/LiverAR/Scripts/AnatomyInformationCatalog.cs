@@ -15,10 +15,11 @@ namespace LiverAR.Runtime
         public string VenousDrainage;
         public string Function;
         public string Description;
+        public string Source;
 
         public string ToDisplayText()
         {
-            return $"{DisplayName}\n\nOverview\n{Overview}\n\nAnatomical location\n{Location}\n\nBlood supply\n{BloodSupply}\n\nVenous drainage\n{VenousDrainage}\n\nFunction\n{Function}\n\nEducational notes\n{Description}";
+            return $"{DisplayName}\n\nOverview\n{Overview}\n\nAnatomical location\n{Location}\n\nBlood supply\n{BloodSupply}\n\nVenous drainage\n{VenousDrainage}\n\nFunction\n{Function}\n\nEducational notes\n{Description}\n\nSource\n{Source}";
         }
     }
 
@@ -32,7 +33,8 @@ namespace LiverAR.Runtime
             BloodSupply = "The hepatic artery and portal vein provide arterial and nutrient-rich inflow.",
             VenousDrainage = "Hepatic veins drain into the inferior vena cava.",
             Function = "Metabolism, bile production, nutrient storage, detoxification, and plasma protein synthesis.",
-            Description = "This educational summary describes normal anatomy and is not medical advice."
+            Description = "This educational summary describes normal anatomy and is not medical advice.",
+            Source = "OpenStax, Anatomy and Physiology 2e, 23.6\nhttps://openstax.org/books/anatomy-and-physiology-2e/pages/23-6-accessory-organs-in-digestion-the-liver-pancreas-and-gallbladder"
         };
 
         public static AnatomyInformationRecord ForSegment(string name)
@@ -45,7 +47,8 @@ namespace LiverAR.Runtime
                 BloodSupply = "The segment receives portal inflow through its corresponding portal pedicle.",
                 VenousDrainage = "Drainage follows nearby hepatic venous territories.",
                 Function = "Segmental anatomy helps describe liver structure and supports educational orientation.",
-                Description = "Use the 3D model and segmentation controls to compare this segment with neighbouring regions."
+                Description = "Use the 3D model and segmentation controls to compare this segment with neighbouring regions.",
+                Source = "Sergi (ed.), Liver Cancer, NCBI Bookshelf, Chapter 4\nhttps://www.ncbi.nlm.nih.gov/books/NBK569802/"
             };
         }
 
@@ -59,7 +62,8 @@ namespace LiverAR.Runtime
                     Id = part.StructureId, DisplayName = part.DisplayName, Category = "Blood Vessel",
                     Overview = "A vessel structure included in the patient model.", Location = "Shown in relation to the liver in the 3D scene.",
                     BloodSupply = "Vessel-specific inflow depends on the displayed structure.", VenousDrainage = "Vessel-specific drainage depends on the displayed structure.",
-                    Function = "Supports blood flow through or away from the liver.", Description = "This educational model does not provide diagnosis or treatment advice."
+                    Function = "Supports blood flow through or away from the liver.", Description = "This educational model does not provide diagnosis or treatment advice.",
+                    Source = "OpenStax, Anatomy and Physiology 2e, 20.1 and 23.6\nhttps://openstax.org/books/anatomy-and-physiology-2e/pages/20-1-structure-and-function-of-blood-vessels"
                 };
             return Liver;
         }
@@ -75,7 +79,8 @@ namespace LiverAR.Runtime
                 Overview = $"{name} is included as an educational topic in this application.",
                 Location = "Changes may affect liver tissue and function.", BloodSupply = "Not applicable to this educational topic.",
                 VenousDrainage = "Not applicable to this educational topic.", Function = "The effect on liver function varies by condition and individual.",
-                Description = "Educational content only. This application does not provide diagnosis or treatment advice."
+                Description = "Educational content only. This application does not provide diagnosis or treatment advice.",
+                Source = "Sharma and Nagalli, Chronic Liver Disease, NCBI Bookshelf\nhttps://www.ncbi.nlm.nih.gov/books/NBK554597/"
             };
         }
 
@@ -89,7 +94,8 @@ namespace LiverAR.Runtime
                 BloodSupply = "Vessel-specific inflow depends on the displayed structure.",
                 VenousDrainage = "Vessel-specific drainage depends on the displayed structure.",
                 Function = "Supports blood flow through or away from the liver.",
-                Description = "This educational model does not provide diagnosis or treatment advice."
+                Description = "This educational model does not provide diagnosis or treatment advice.",
+                Source = "OpenStax, Anatomy and Physiology 2e, 20.1 and 23.6\nhttps://openstax.org/books/anatomy-and-physiology-2e/pages/23-6-accessory-organs-in-digestion-the-liver-pancreas-and-gallbladder"
             };
         }
     }
