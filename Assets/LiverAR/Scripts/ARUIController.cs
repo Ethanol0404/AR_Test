@@ -636,7 +636,7 @@ namespace LiverAR.Runtime
             }
             CreateRuntimeButton(informationPanel.transform, "Back", new Vector2(.06f, .04f), new Vector2(.40f, .11f), RenderInformationHome);
             CreateRuntimeButton(informationPanel.transform, "Close", new Vector2(.54f, .04f), new Vector2(.40f, .11f), CloseInformationPanel);
-            SetPanelActive(informationPanel, informationPanel);
+            SetNavigationPanel(informationPanel);
         }
 
         void RenderInformationDetail(AnatomyInformationRecord record, bool allowBack)
@@ -656,7 +656,7 @@ namespace LiverAR.Runtime
             var scroll = viewport.AddComponent<ScrollRect>(); scroll.viewport = viewport.GetComponent<RectTransform>(); scroll.content = contentRect; scroll.horizontal = false; scroll.vertical = true; scroll.movementType = ScrollRect.MovementType.Clamped;
             CreateRuntimeButton(informationPanel.transform, "Back", new Vector2(.06f, .04f), new Vector2(.40f, .11f), allowBack ? RenderInformationHome : OpenInformationMenu);
             CreateRuntimeButton(informationPanel.transform, "Close", new Vector2(.54f, .04f), new Vector2(.40f, .11f), CloseInformationPanel);
-            SetPanelActive(informationPanel, informationPanel);
+            SetNavigationPanel(informationPanel);
         }
 
         string[] GetAvailableVesselNames()
@@ -693,7 +693,7 @@ namespace LiverAR.Runtime
             CreateRuntimeButton(informationPanel.transform, "Back", new Vector2(.06f, .04f), new Vector2(.40f, .11f), showHomeBack ? CloseInformationPanel : RenderInformationHome);
             CreateRuntimeButton(informationPanel.transform, "Close", new Vector2(.54f, .04f), new Vector2(.40f, .11f), CloseInformationPanel);
             var scroll = viewport.AddComponent<ScrollRect>(); scroll.viewport = viewport.GetComponent<RectTransform>(); scroll.content = contentRect; scroll.horizontal = false; scroll.vertical = true;
-            SetPanelActive(informationPanel, informationPanel);
+            SetNavigationPanel(informationPanel);
         }
 
         static string ValueOrPlaceholder(string value)
