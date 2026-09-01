@@ -652,6 +652,12 @@ namespace LiverAR.Runtime
             var contentRect = content.GetComponent<RectTransform>(); contentRect.anchorMin = new Vector2(0f, 1f); contentRect.anchorMax = new Vector2(1f, 1f); contentRect.pivot = new Vector2(.5f, 1f);
             var text = CreateRuntimeText(content.transform, "Information Body", record.ToDisplayText(), 14, TextAnchor.UpperLeft, Vector2.zero, Vector2.one);
             text.horizontalOverflow = HorizontalWrapMode.Wrap; text.verticalOverflow = VerticalWrapMode.Overflow;
+            var textRect = text.rectTransform;
+            textRect.anchorMin = new Vector2(0f, 1f); textRect.anchorMax = new Vector2(1f, 1f); textRect.pivot = new Vector2(.5f, 1f);
+            Canvas.ForceUpdateCanvases();
+            var textHeight = Mathf.Max(640f, text.preferredHeight + 24f);
+            contentRect.sizeDelta = new Vector2(0f, textHeight);
+            textRect.sizeDelta = new Vector2(0f, textHeight);
             var fitter = content.GetComponent<ContentSizeFitter>(); fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
             var scroll = viewport.AddComponent<ScrollRect>(); scroll.viewport = viewport.GetComponent<RectTransform>(); scroll.content = contentRect; scroll.horizontal = false; scroll.vertical = true; scroll.movementType = ScrollRect.MovementType.Clamped;
             CreateRuntimeButton(informationPanel.transform, "Back", new Vector2(.06f, .04f), new Vector2(.40f, .11f), allowBack ? RenderInformationHome : OpenInformationMenu);

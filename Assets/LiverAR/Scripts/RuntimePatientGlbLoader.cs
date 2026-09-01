@@ -97,21 +97,22 @@ namespace LiverAR.Runtime
                     var collider = meshFilter.GetComponent<MeshCollider>() ?? meshFilter.gameObject.AddComponent<MeshCollider>();
                     collider.sharedMesh = meshFilter.sharedMesh;
                 }
-                part.Configure(ToStructureId(entry.Id), entry.DisplayName, ToCategory(entry), GetPartColor(entry, index), renderers);
+                part.Configure(ToStructureId(entry.Id), entry.DisplayName, ToCategory(entry), GetPartColor(entry), renderers);
             }
 
             Physics.SyncTransforms();
         }
 
-        static Color GetPartColor(PatientModelEntry entry, int index)
+        static Color GetPartColor(PatientModelEntry entry)
         {
             if (entry.Name.IndexOf("vein", StringComparison.OrdinalIgnoreCase) >= 0)
                 return new Color(0.12f, 0.42f, 0.95f, 1f);
             if (entry.Name.IndexOf("tumor", StringComparison.OrdinalIgnoreCase) >= 0)
                 return new Color(0.95f, 0.22f, 0.18f, 1f);
 
-            var hue = Mathf.Repeat(0.04f + index * 0.085f, 1f);
-            return Color.HSVToRGB(hue, 0.62f, 0.9f);
+            // Keep the first imported view visually unified; segmentation controls
+            // still identify and isolate each AnatomyPart independently.
+            return new Color(0.72f, 0.12f, 0.10f, 1f);
         }
 
         void PlaceInFrontOfCamera(Transform root)
