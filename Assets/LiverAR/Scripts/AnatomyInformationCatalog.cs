@@ -73,7 +73,7 @@ namespace LiverAR.Runtime
 
         public static AnatomyInformationRecord ForDisease(string name)
         {
-            return new AnatomyInformationRecord
+            var record = new AnatomyInformationRecord
             {
                 Id = name.ToLowerInvariant().Replace(" ", "-"), DisplayName = name, Category = "Liver Disease",
                 Overview = $"{name} is included as an educational topic in this application.",
@@ -82,6 +82,44 @@ namespace LiverAR.Runtime
                 Description = "Educational content only. This application does not provide diagnosis or treatment advice.",
                 Source = "Sharma and Nagalli, Chronic Liver Disease, NCBI Bookshelf\nhttps://www.ncbi.nlm.nih.gov/books/NBK554597/"
             };
+
+            if (string.Equals(name, "Fatty Liver", StringComparison.OrdinalIgnoreCase))
+            {
+                record.Overview = "Fatty liver describes excess fat stored in liver cells. It may occur with metabolic conditions or prolonged alcohol exposure.";
+                record.Location = "Fat accumulates within liver tissue and may be distributed throughout the organ.";
+                record.Function = "Early fatty change may cause few symptoms, but ongoing injury can lead to inflammation and fibrosis.";
+                record.Description = "Risk factors can include obesity, diabetes, abnormal blood lipids, and alcohol use. This model is for learning, not diagnosis.";
+            }
+            else if (string.Equals(name, "Cirrhosis", StringComparison.OrdinalIgnoreCase))
+            {
+                record.Overview = "Cirrhosis is advanced scarring in which repeated liver injury changes the normal tissue architecture.";
+                record.Location = "Fibrous bands and regenerative nodules can alter the structure of the whole liver.";
+                record.Function = "Scarring can reduce normal protein production, detoxification, bile handling, and blood flow through the liver.";
+                record.Description = "Cirrhosis has many possible causes and requires professional medical assessment; this panel gives educational context only.";
+            }
+            else if (string.Equals(name, "Alcohol-Related Liver Disease", StringComparison.OrdinalIgnoreCase))
+            {
+                record.Overview = "Alcohol-related liver disease describes a spectrum of injury associated with prolonged alcohol exposure.";
+                record.Location = "Changes may involve liver cells, inflammatory tissue, and later fibrotic scar tissue.";
+                record.Function = "Progressive injury can interfere with metabolism, bile excretion, protein synthesis, and circulation.";
+                record.Description = "The spectrum may include fatty change, inflammation, and cirrhosis. The application does not provide treatment advice.";
+            }
+            else if (string.Equals(name, "Liver Cancer", StringComparison.OrdinalIgnoreCase))
+            {
+                record.Overview = "Liver cancer is an abnormal growth of cells in or involving liver tissue; hepatocellular carcinoma is a primary liver cancer.";
+                record.Location = "A tumour may arise in one region of the liver and can change local anatomy as it grows.";
+                record.Function = "A tumour or underlying liver disease can affect normal liver architecture and function.";
+                record.Description = "The 3D model illustrates anatomy and does not represent a clinical tumour or support diagnosis.";
+            }
+            else if (string.Equals(name, "Hepatitis", StringComparison.OrdinalIgnoreCase))
+            {
+                record.Overview = "Hepatitis means inflammation of the liver and can have infectious, immune, toxic, or metabolic causes.";
+                record.Location = "Inflammation affects liver tissue and may be temporary or persist over time, depending on its cause.";
+                record.Function = "Persistent inflammation may lead to fibrosis and alter normal liver functions.";
+                record.Description = "Different forms of hepatitis behave differently. This educational summary is not a diagnosis or treatment guide.";
+            }
+
+            return record;
         }
 
         public static AnatomyInformationRecord ForVessel(string name)

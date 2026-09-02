@@ -681,7 +681,10 @@ namespace LiverAR.Runtime
         void ClearInformationPanel()
         {
             foreach (Transform child in informationPanel.transform)
+            {
+                child.gameObject.SetActive(false);
                 Destroy(child.gameObject);
+            }
             informationBodyText = null;
         }
 
